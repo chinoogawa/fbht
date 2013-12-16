@@ -1,0 +1,26 @@
+strict digraph  {
+	ck -> djstoop;
+	djstoop -> everett;
+	djstoop -> tonytung;
+	djstoop -> cweeldreyer;
+	djstoop -> ilovebacon;
+	djstoop -> scottgoodson;
+	djstoop -> kimtsi;
+	djstoop -> g;
+	"wi11.bai1ey" -> nicholas;
+	"wi11.bai1ey" -> tonytung;
+	"wi11.bai1ey" -> Mactyler;
+	"wi11.bai1ey" -> tomo;
+	brk -> erbilk;
+	kimtsi -> bh;
+	shaverm -> erbilk;
+	"jesse.cool" -> chart;
+	"jesse.cool" -> mollyg;
+	erbilk -> katea;
+	erbilk -> ilovebacon;
+	erbilk -> tomalison;
+	erbilk -> Mactyler;
+	Mactyler -> mollyg;
+	Mactyler -> "peter.jordan";
+	Mactyler -> phil;
+}

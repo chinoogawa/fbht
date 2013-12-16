@@ -1,0 +1,25 @@
+strict digraph  {
+	"rob.varady" -> 44;
+	"todd.schulte.52" -> "rohit.chopra.165";
+	"todd.schulte.52" -> joegreen;
+	"willy.deringer" -> "steve.grossman";
+	kaganovich -> 44;
+	44 -> "rebecca.zeidel";
+	44 -> "steve.grossman";
+	44 -> ygrill;
+	44 -> joegreen;
+	"charles.best.165" -> joegreen;
+	ygrill -> joegreen;
+	jeremystoppelman -> joegreen;
+	"rohit.chopra.165" -> 44;
+	"rohit.chopra.165" -> joegreen;
+	"steve.grossman" -> joegreen;
+	"katie.e.golden" -> "rebecca.zeidel";
+	"katie.e.golden" -> "luke.e.cocalis";
+	"nicole.t.darcy" -> joegreen;
+	"jason.borschow" -> joegreen;
+	ericalee -> joegreen;
+	alisongelbpincus -> joegreen;
+	danieljsachs -> joegreen;
+	andrewobus -> joegreen;
+}

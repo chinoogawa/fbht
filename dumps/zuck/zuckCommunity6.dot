@@ -1,0 +1,20 @@
+strict digraph  {
+	gyang -> kx;
+	gregmarra -> mikesego;
+	gregmarra -> "sharon.hwang";
+	gregmarra -> jsmarr;
+	gregmarra -> rdbayer;
+	gregmarra -> "elizabeth.stark.1420";
+	jasont -> kx;
+	jocelyn -> kx;
+	fbcathy -> kx;
+	"laura.amardolan" -> ChrisHughes;
+	kevinlacker -> kx;
+	mikesego -> kx;
+	sethjs -> jasonpjason;
+	ChrisHughes -> kx;
+	"elizabeth.stark.1420" -> kx;
+	elynde -> kx;
+	kx -> jasonpjason;
+	amir -> kx;
+}

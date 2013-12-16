@@ -1,0 +1,20 @@
+strict digraph  {
+	"todd.weidner.35" -> Javier;
+	"neal.george" -> davidswain;
+	"neal.george" -> bubba;
+	Javier -> rudyg;
+	Javier -> MikeBuckey;
+	Javier -> dean;
+	Javier -> "oliver.samwer";
+	dean -> bubba;
+	linder -> bubba;
+	Ed -> bubba;
+	davidswain -> johnmccrea;
+	davidswain -> bubba;
+	davidswain -> MikeBuckey;
+	tim -> linder;
+	themightyone -> rudyg;
+	adamconner -> linder;
+	adamconner -> jpalfrey;
+	bubba -> johnmccrea;
+}

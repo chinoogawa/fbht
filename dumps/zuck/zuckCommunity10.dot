@@ -1,0 +1,14 @@
+strict digraph  {
+	"april.buchheit" -> tudorb;
+	"geoffrey.challen" -> vernal;
+	"geoffrey.challen" -> arudolph;
+	buchheit -> tudorb;
+	kma -> tudorb;
+	kma -> "marcaurelio.ranzato";
+	tudorb -> yunfang;
+	tudorb -> mrabkin;
+	tudorb -> robert;
+	tudorb -> kholst;
+	tudorb -> "philip.zeyliger";
+	arudolph -> "philip.zeyliger";
+}
