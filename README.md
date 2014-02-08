@@ -19,7 +19,7 @@ IMPORTS:
 
 S.O:
   Working on Windows 7 64/32 bits
-  Linux not working yet (You could change all paths in the code and use unix style and works like a charm ;) ) 
+  Working on Kali Linux (Yeah, sucks) but probably works on the others 
 
 Usage: 
   python main.py 
