@@ -3,6 +3,8 @@ FBHT
 
 Facebook Hacking Tool
 
+For linux version check --> https://github.com/chinoogawa/fbht-linux
+
 Python  - -version 2.7.3 (Windows/Linux)
 
 IMPORTS:
