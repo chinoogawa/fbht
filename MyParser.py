@@ -24,6 +24,8 @@ def parseData(dataRaw):
     
 
     for data in dataRaw:    
+        if data=="":
+            continue
         text = data.strip("for (;;);")
         json_dump = json.loads(text)
         try:
@@ -33,16 +35,16 @@ def parseData(dataRaw):
             print 'Error in json dump or parser.feed'
 
     for i in range(len(parser.dataArray)):
-        if parser.dataArray[i] == 'Name:':
+        if parser.dataArray[i] == 'Name':
             names.append(parser.dataArray[i+1])
             continue
-        if parser.dataArray[i] == 'User ID:':
+        if parser.dataArray[i] == 'User ID':
             userIds.append(parser.dataArray[i+1])
             continue
-        if parser.dataArray[i] == 'Login email:':
+        if parser.dataArray[i] == 'Login email':
             emails.append(parser.dataArray[i+1]+'@'+parser.dataArray[i+2])
             continue
-        if parser.dataArray[i] == 'Login password:':
+        if parser.dataArray[i] == 'Login password':
             passwords.append(parser.dataArray[i+1])
             continue
     

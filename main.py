@@ -9,6 +9,9 @@ globalLogin = False
 globalEmail = ''
 globalPassword = ''
 
+privacy = {'0':'80','1':'40','2':'10'}
+privacySet = ['0','1','2']
+
 def main():
 
     global globalLogin
@@ -28,7 +31,7 @@ def main():
     print '                       \ \ / // / | | | |         '
     print '                        \ V // /_ | |_| |         '
     print '                         \_/|____(_\___/          '
-	
+    
     print '               _     _                                             '
     print '    ____      | |   (_)                                            '
     print '   / __ \  ___| |__  _ _ __   ___   ___   __ _  __ ___      ____ _ '
@@ -40,8 +43,7 @@ def main():
     print '\n\n\n\n\n\n'	
 
     raw_input('Enjoy it :D . Press enter to get started')
-	
-	
+
     while 1:
         option = -1
         while ((int(option) != 1)  and (int(option) != 2)  and 
@@ -66,7 +68,7 @@ def main():
             print '7)  Link Preview hack (Youtube version)\n'
             print '8)  Youtube hijack\n'
             print '9)  Private message, Link Preview hack (Simple web version)\n'
-            print '10)  Private message, Link Preview hack (Youtube version)\n'
+            print '10) Private message, Link Preview hack (Youtube version)\n'
             print '11) Like flood\n'
             print '12) Publish a post as an App (App Message Spoof)\n'
             print '13) Bypass friendship privacy\n'
@@ -151,13 +153,17 @@ def main():
                 password = globalPassword
             
             if (login(email,password,'real'))!= -1:
-                summary = raw_input('Insert a summary for the link: ')
-                link = raw_input('Insert de evil link: ')
-                realLink = raw_input('Insert de real link: ')
-                title = raw_input('Insert a title for the link: ')
-                image = raw_input('Insert the image url for the post: ')
-                comment = raw_input('Insert a comment for the post associated: ')
-                linkPreview(link,realLink,title,summary,comment,image)                
+                option = raw_input("Insert option for privacy 0:Public 1:Friends 2:Only Me : ")
+                if option in privacySet:  
+                    summary = raw_input('Insert a summary for the link: ')
+                    link = raw_input('Insert de evil link: ')
+                    realLink = raw_input('Insert de real link: ')
+                    title = raw_input('Insert a title for the link: ')
+                    image = raw_input('Insert the image url for the post: ')
+                    comment = raw_input('Insert a comment for the post associated: ')
+                    linkPreview(link,realLink,title,summary,comment,image, privacy[option])
+                else:
+                    print "Wrong privacy value, try again "                
             
         
         if (int(option) == 7):
@@ -169,13 +175,17 @@ def main():
                 password = globalPassword
             
             if (login(email,password,'real'))!= -1:
-                summary = raw_input('Insert a summary for the video: ')
-                link = raw_input('Insert de evil link: ')
-                videoLink = raw_input('Insert de youtube link: ')
-                title = raw_input('Insert a title for the video: ')
-                videoID = raw_input('Insert the video ID (w?=): ')
-                comment = raw_input('Insert a comment for the post associated to the video: ')
-                linkPreviewYoutube(link,videoLink,title,summary,comment,videoID)
+                option = raw_input("Insert option for privacy 0:Public 1:Friends 2:Only Me : ")
+                if option in privacySet:
+                    summary = raw_input('Insert a summary for the video: ')
+                    link = raw_input('Insert de evil link: ')
+                    videoLink = raw_input('Insert de youtube link: ')
+                    title = raw_input('Insert a title for the video: ')
+                    videoID = raw_input('Insert the video ID (w?=): ')
+                    comment = raw_input('Insert a comment for the post associated to the video: ')
+                    linkPreviewYoutube(link,videoLink,title,summary,comment,videoID,privacy[option])
+                else:
+                    print "Wrong privacy value, try again " 
         
         if (int(option) == 8):
             signal.signal(signal.SIGINT, signal_handler)
@@ -187,13 +197,17 @@ def main():
                 password = globalPassword
 
             if (login(email,password,'real'))!= -1:
-                summary = raw_input('Insert a summary for the video: ')
-                videoLink = raw_input('Insert de youtube link: ')
-                title = raw_input('Insert a title for the video: ')
-                videoID = raw_input('Insert the video ID (watch?v=): ')
-                comment = raw_input('Insert a comment for the post associated to the video: ')
-                hijackedVideo = raw_input('Insert the ID for the hijacked video (watch?v=): ')
-                hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo)
+                option = raw_input("Insert option for privacy 0:Public 1:Friends 2:Only Me : ")
+                if option in privacySet:
+                    summary = raw_input('Insert a summary for the video: ')
+                    videoLink = raw_input('Insert de youtube link: ')
+                    title = raw_input('Insert a title for the video: ')
+                    videoID = raw_input('Insert the video ID (watch?v=): ')
+                    comment = raw_input('Insert a comment for the post associated to the video: ')
+                    hijackedVideo = raw_input('Insert the ID for the hijacked video (watch?v=): ')
+                    hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo)
+                else:
+                    print "Wrong privacy value, try again "
 
         if (int(option) == 9):
             signal.signal(signal.SIGINT, signal_handler)
@@ -314,12 +328,20 @@ def main():
 
         
         if (int(option) == 15):
-            analize = int(raw_input('Analyze an existing one, or a new one? (0|1): '))
-            victim = raw_input('Insert the victim username or userId: ')
-            if (analize == 1):
-                analyzeGraph(victim)
+            
+            if (globalLogin == False):
+                email,password = setMail()
             else:
-                reAnalyzeGraph(victim)
+                email = globalEmail
+                password = globalPassword
+            
+            if (login(email,password,'real'))!= -1:
+                analize = int(raw_input('Analyze an existing one, or a new one? (0|1): '))
+                victim = raw_input('Insert the victim username or userId: ')
+                if (analize == 1):
+                    analyzeGraph(victim)
+                else:
+                    reAnalyzeGraph(victim)
         
         if (int(option) == 16):
             fileName = raw_input('Insert the victim username: ')
