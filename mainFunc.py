@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import community
 from networkx.drawing.nx_agraph import write_dot
-
+from base64 import b64encode
 
 def setGlobalLogginng():
     global globalLogging
@@ -1696,6 +1696,119 @@ def corePagesLike(victim,transitive):
             #Moves the pointer for next match
             start += matchEnd.start()+matchAnd.end() 
     return page
+
+def checkPrivacy(victim):
+    try:
+            response = br.open('https://www.facebook.com/'+str(victim)+'?sk=friends')
+            resultado = response.read()
+            match = re.search('All Friends',resultado)
+            matchBis = re.search('Todos los amigos',resultado)
+            if ((match is not None) or (matchBis is not None)):
+                matchFriends = re.search('id="friendsTypeaheadResults(.+)"',resultado).group()
+                return matchFriends 
+            else:
+                return -1
+    except:
+        print 'Error in the process, brute force will be applied ..'
+        return -1
+    
+def simpleGraph(friends, victim):
+    coleccion = {}
+    nodeID = 0
+
+    root = 'dumps'
+    directory = str(victim)
+    
+    mkdir(directory,root)
+    
+    myGraph = nx.Graph()
+    
+    coleccion[victim] = nodeID
+    
+    victima = nodeID
+    myGraph.add_node(victima)
+    nodeID += 1
+    #Check if the file exists, if true append, else create and writes
+    try:
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
+    except:
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        
+    for friend in friends:
+        
+        friendshipFile.write(str(friend)+'\n')
+        
+        try:
+            mutual = coreFriendshipPrivacy(victim, friend)
+        except:
+            continue
+        
+        coleccion[friend] = nodeID
+        nodeID += 1
+        
+        if myGraph.has_node(friend) != True:
+            myGraph.add_node(friend)
+        
+            
+        if myGraph.has_edge(victima, friend) != True:
+            myGraph.add_edge(victima, friend)
+
+        for element in mutual:
+            if myGraph.has_node(element) != True:
+                myGraph.add_node(element)
+                myGraph.add_edge(element, friend)
+        
+    friendshipFile.close()
+    
+    mkdir('objects',root+'\\'+directory)
+    
+    A = nx.adj_matrix(myGraph)
+    saveObjects(victim, A, coleccion)
+    
+    nx.draw_spring(myGraph,node_color = np.linspace(0,1,len(myGraph.nodes())),edge_color = np.linspace(0,1,len(myGraph.edges())) ,with_labels=True)
+    plt.savefig(root+'\\'+directory+'\\'+victim+"graph_color.pdf")
+    plt.savefig(root+'\\'+directory+'\\'+victim+"graph_color.png")
+    write_dot(myGraph,root+'\\'+directory+'\\'+victim+"graph_color.dot")    
+    plt.show()
+    
+def friendshipPlot(text,victim):
+    friends = []
+    friendsID = []
+    counter = 0
+    lastId = 0
+    while counter < 4:
+        matchStart = re.search("_5q6s _8o _8t lfloat _ohe\" href=\"https://www.facebook.com/",text)
+        if matchStart is not None:
+            start = matchStart.end()
+            matchEnd = re.search("\?",text[start:])
+            name = text[start:matchEnd.start()+start]
+            if name not in friends:
+                friends.append(name)
+                fbid = getUserID(name)
+                if fbid is not -1:
+                    friendsID.append(fbid)
+            text = text[matchEnd.start()+start:]
+        else:
+            try:
+                c_user = getC_user()
+                userId = getUserID(victim)
+                if getUserID(friends[len(friends)-1]) == lastId:
+                    counter += 1
+                lastId = getUserID(friends[len(friends)-1])
+                encoded = b64encode('0:not_structured:'+str(lastId))
+                response = br.open('https://www.facebook.com/ajax/pagelet/generic.php/AllFriendsAppCollectionPagelet?data={"collection_token":"'+userId+':2356318349:2","cursor":"'+encoded+'","tab_key":"friends","profile_id":'+userId+',"q":"'+victim+'","overview":false,"ftid":null,"order":null,"sk":"friends","importer_state":null}&__user='+c_user+'&__a=1&__dyn=7n8apij2qmp5zpQ9UoHbgWyxi9ACwKyaF299qzCAjFDxCm&__req=7&__rev=1183274')
+                to_parse = str(response.read()).strip('for (;;);')
+                try:
+                    #Converts the json web response to a python like object
+                    json_dump = json.loads(to_parse)
+                    text = json_dump["payload"]
+                except:
+                    print 'Error on json loading'
+                    return 
+                
+            except:
+                print 'ERROR MOTHER FUCKER'
+    return friendsID
 
 def coreFriendshipPrivacy(victim,transitive):
     friends = []

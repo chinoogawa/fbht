@@ -1,4 +1,4 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts 
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph 
 from database import connect,status
 from time import time
 import signal
@@ -25,12 +25,12 @@ def main():
     print '                   |  __| |  _ <|  __  |  | |     '
     print '                   | |    | |_) | |  | |  | |     '
     print '                   |_|    |____/|_|  |_|  |_|     '
-    print '                             ___    ___           '
-    print '                            |__ \  / _ \          '
-    print '                       __   __ ) || | | |         '
-    print '                       \ \ / // / | | | |         '
-    print '                        \ V // /_ | |_| |         '
-    print '                         \_/|____(_\___/          '
+    print '                             ____   ___           '
+    print '                            |___ \ / _ \          '
+    print '                       __   ____) | | | |         '
+    print '                       \ \ / /__ <| | | |         '
+    print '                        \ V /___) | |_| |         '
+    print '                         \_/|____(_)___/          '
     
     print '               _     _                                             '
     print '    ____      | |   (_)                                            '
@@ -322,9 +322,15 @@ def main():
 
             if (login(email,password,'real'))!= -1:
                 victim = raw_input('Insert the victim username or userId: ')
-                transitive = raw_input('Insert the transitive username or userId: ')
-                print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
-                bypassFriendshipPrivacyPlot(victim, transitive)
+                check = checkPrivacy(victim)
+                if (check == -1):
+                    transitive = raw_input('Insert the transitive username or userId: ')
+                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    bypassFriendshipPrivacyPlot(victim, transitive)
+                else:
+                    friendList = friendshipPlot(check,victim)
+                    simpleGraph(friendList, victim)
+                    print 'Friends available public ;D'
 
         
         if (int(option) == 15):
