@@ -1,4 +1,4 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph 
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph
 from database import connect,status
 from time import time
 import signal
@@ -56,7 +56,8 @@ def main():
                (int(option) != 15) and (int(option) != 16) and 
                (int(option) != 17) and (int(option) != 18) and
                (int(option) != 19) and (int(option) != 20) and
-               (int(option) != 21) and (int(option) != 22)):
+               (int(option) != 21) and (int(option) != 22) and 
+               (int(option) != 23)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -80,7 +81,8 @@ def main():
             print '19) Set global login (Credentials stored in memory - Danger)\n'
             print '20) Print dead attacks :\'( \n'
             print '21) Send friend request to disclosed friend list from your account\n'
-            print '22) Close the application\n'
+            print '22) Bypass friendship (only .dot without graph integration)\n'
+            print '23) Close the application\n'
             
             choice = raw_input('Insert your choice: ')
             
@@ -398,8 +400,29 @@ def main():
                     sendRequestToList(victim)
         
 
-        
         if (int(option) == 22):
+            signal.signal(signal.SIGINT, signal_handler)
+
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+
+            if (login(email,password,'real'))!= -1:
+                victim = raw_input('Insert the victim username or userId: ')
+                check = checkPrivacy(victim)
+                if (check == -1):
+                    transitive = raw_input('Insert the transitive username or userId: ')
+                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    dotFile(victim, transitive)
+                else:
+                    print 'Friends publicly available ;D'
+                    friendList = friendshipPlot(check,victim)
+                    simpleDotGraph(friendList, victim)
+
+                    
+        if (int(option) == 23):
             connect.close()
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        

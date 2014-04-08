@@ -318,6 +318,9 @@ def sendRequestToList(victim):
     root = 'dumps'
     directory = victim
     friends = []
+    frieds_send = []
+    count = 0
+    number = raw_input('Insert the amount of requests to send: ')
     
     try:
         try:
@@ -326,7 +329,18 @@ def sendRequestToList(victim):
             logs('Friend file not found')
             print 'Friend file not found'
             return
-        
+        try:
+            persons_send = open(root+'\\'+directory+'\\'+victim+'_friend_send.txt',"rb")
+            while True:
+                linea = persons_send.readline()
+                if not linea:
+                    break
+                frieds_send.append(linea.strip("\n\r"))
+            persons_send.close()
+            persons_send = open(root+'\\'+directory+'\\'+victim+'_friend_send.txt',"ab")
+        except:
+            persons_send = open(root+'\\'+directory+'\\'+victim+'_friend_send.txt',"wb")
+            
         while True:
             linea = persons.readline()
             if not linea:
@@ -338,54 +352,62 @@ def sendRequestToList(victim):
         
         print 'Sending friend requests'
         
+                
         for userID in friends:        
-            
-            ''' Selects the fb_dtsg form '''   
-            set_dtsg()
-            c_user = getC_user()
+            if userID not in frieds_send:
+                #Escape condition
+                if count > int(number):
+                    persons_send.close()
+                    return
                 
-            arguments = {
-                'to_friend' : userID,
-                'action' : 'add_friend',
-                'how_found' : 'profile_button',
-                'ref_param' : 'none',
-                'link_data[gt][profile_owner]' : userID,
-                'link_data[gt][ref]' : 'timeline:timeline',
-                'outgoing_id' : '',
-                'logging_location' : '',
-                'no_flyout_on_click' : 'true',
-                'ego_log_data' : '',
-                'http_referer' : '',
-                '__user' : c_user,
-                '__a' : '1',
-                '__dyn' : '7n8aD5z5zu',
-                '__req' : 'n',
-                'fb_dtsg' : br.form['fb_dtsg'],
-                'phstamp' : '1658165688376111103320'
-                }
-            
-    
-            datos = urlencode(arguments)
-            try:
-                response = br.open('https://www.facebook.com/ajax/add_friend/action.php',datos)
-                
-                #percentage
-                percentage = (i * 100.0) / len(friends)
-                i+=1
-                print '\rCompleted [%.2f%%]\r'%percentage,
-                        
-                if globalLogging:
-                    logs(response.read())
+                count += 1
+                ''' Selects the fb_dtsg form '''   
+                set_dtsg()
+                c_user = getC_user()
                     
-                print 'Friend Request sent from %s to %s! \n' %(c_user,userID)
-            except:
-                logs('Error sending request ')
-                print 'Error sending request \n'
+                arguments = {
+                    'to_friend' : userID,
+                    'action' : 'add_friend',
+                    'how_found' : 'profile_button',
+                    'ref_param' : 'none',
+                    'link_data[gt][profile_owner]' : userID,
+                    'link_data[gt][ref]' : 'timeline:timeline',
+                    'outgoing_id' : '',
+                    'logging_location' : '',
+                    'no_flyout_on_click' : 'true',
+                    'ego_log_data' : '',
+                    'http_referer' : '',
+                    '__user' : c_user,
+                    '__a' : '1',
+                    '__dyn' : '7n8aD5z5zu',
+                    '__req' : 'n',
+                    'fb_dtsg' : br.form['fb_dtsg'],
+                    'ttstamp' : '265817211599516953787450107',
+                    }
+                
+        
+                datos = urlencode(arguments)
+                try:
+                    response = br.open('https://www.facebook.com/ajax/add_friend/action.php',datos)
+                    
+                    #percentage
+                    percentage = (i * 100.0) / len(friends)
+                    i+=1
+                    print '\rCompleted [%.2f%%]\r'%percentage,
+                            
+                    if globalLogging:
+                        logs(response.read())
+                        
+                    print 'Friend Request sent from %s to %s! \n' %(c_user,userID)
+                    persons_send.write(userID+'\n')
+                except:
+                    logs('Error sending request ')
+                    print 'Error sending request \n'
     except signalCaught as e:
-        deleteUser()
         message = '%s catch from send request module' %e.args[0]
         logs(str(message))
         print '%s \n' %message
+        persons_send.close()
         raw_input('Press enter to continue')
         return
 
@@ -1945,3 +1967,143 @@ def logs(messagelog):
     log = str(cTime) + ' : ' + str(messagelog) + '\n'
     f.write(log)
     f.close()
+    
+    
+def dotFile(victim, transitive):
+
+    root = 'dumps'
+    directory = str(victim)
+    
+    mkdir(directory,root)
+    
+    myGraph = open(root+'\\'+directory+'\\'+victim+'_dot.dot',"wb")
+    myGraph.write('strict digraph {\n')
+    
+    #Percentage container
+    percentage = 0.0
+    #Disclosude friends container
+    friendships = []
+    #Already visited nodes container
+    visited = []  
+    try:
+        #If the file already exists 
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"rb")
+        #Reads every line of the file
+        while True:
+            linea = friendshipFile.readline()
+            if not linea:
+                break
+            #Store in the visited array for non repetition
+            visited.append(linea.strip("\n\r"))
+        friendshipFile.close()
+
+    except:
+        #If the file does not exists, creates the file
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        friendshipFile.close()
+     
+    
+    try:
+        #Generates the first level of the search
+        result = coreFriendshipPrivacy(victim,transitive)
+    except:
+        print 'Check the internet connection please..'
+        return
+    
+    #Stores non repetitive values in the disclosed friends container
+    transitivo = getName(transitive)
+    for individuos in result:
+        if individuos not in visited:          
+            myGraph.write('    "'+transitivo + '" -> "' + getName(individuos) + '";\n')
+            friendships.append(individuos)
+    
+    #Counter for percentage calculus purpose 
+    i = 0.0
+    #flush
+    print '\r                                                        \r',
+    #For every value in the first disclosed list, repeats until every value has been tryed    
+    for friends in friendships:
+        #Percentage calculus 
+        percentage = (i * 100.0)/len(friendships)
+        
+        print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(friendships), percentage), 
+        i+=1
+        #Only if the node wasn't visited 
+        if friends not in visited:
+            #if coreFriendshipPrivacy() fails, an exception is caught. Therefore, state wis still being True. 
+            #Only if the try passes, the infinite while will end. (For internet error connection problem)
+            state = True
+            while state == True:
+                try:
+                    result = coreFriendshipPrivacy(victim,friends)
+                    state = False
+                except signalCaught as e:
+                    state = False
+                    print 'Signal Caught handler'
+                    print '%s ' %e.args[0]
+                    return
+                except:
+                    logs('Check the internet connection please.. Press enter when it\'s done')
+                    print '\r                                                                       \r',
+                    raw_input('\rCheck the internet connection please.. Press enter when it\'s done\r'),
+            
+            #Stores non repetitive values in the disclosed friends container
+            friendName = getName(friends)    
+            for element in result:
+                if element not in friendships:
+                    transitive = getName(element)
+                    myGraph.write('    "'+friendName + '" -> "' + transitive + '";\n')
+                    friendships.append(element)
+            
+            #Stores every single value of friendships list alredy analyzed for non repetitivness
+            visited.append(friends)
+            
+    #Check if the file exists, if true append, else create and writes
+    try:
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
+    except:
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        
+    #Stores every userID for further analyzis
+    for friends in friendships:
+        transitivo = getName(friends)
+        myGraph.write('    "'+victim + '" -> "' + transitivo + '";\n')
+        friendshipFile.write(str(friends)+'\n')
+    
+    myGraph.write('}')
+    friendshipFile.close()
+    myGraph.close()
+
+def simpleDotGraph(friends, victim):
+    root = 'dumps'
+    directory = str(victim)
+    
+    mkdir(directory,root)
+    
+    myGraph = open(root+'\\'+directory+'\\'+victim+'_dot.dot',"wb")
+    myGraph.write('strict digraph {\n')
+    #Check if the file exists, if true append, else create and writes
+    try:
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
+    except:
+        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        
+    for friend in friends:
+        
+        friendshipFile.write(str(friend)+'\n')
+        
+        try:
+            mutual = coreFriendshipPrivacy(victim, friend)
+        except:
+            continue
+
+        transitive = getName(friend)
+        myGraph.write('    "'+victim + '" -> "' + transitive + '";\n')
+
+        for element in mutual:
+            mutualFriend = getName(element)
+            myGraph.write('    "'+transitive + '" -> "' + mutualFriend + '";\n')
+
+    myGraph.write('}')    
+    friendshipFile.close()
+    myGraph.close()
