@@ -330,7 +330,7 @@ def main():
                     print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
                     bypassFriendshipPrivacyPlot(victim, transitive)
                 else:
-                    friendList = friendshipPlot(check,victim)
+                    friendList, friendsName = friendshipPlot(check,victim)
                     simpleGraph(friendList, victim)
                     print 'Friends available public ;D'
 
@@ -418,8 +418,8 @@ def main():
                     dotFile(victim, transitive)
                 else:
                     print 'Friends publicly available ;D'
-                    friendList = friendshipPlot(check,victim)
-                    simpleDotGraph(friendList, victim)
+                    friendList, friendsName = friendshipPlot(check,victim)
+                    simpleDotGraph(friendsName, victim)
 
                     
         if (int(option) == 23):

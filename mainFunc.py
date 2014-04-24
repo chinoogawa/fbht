@@ -1154,7 +1154,7 @@ def linkFriends(victim):
     friends = []
     root = 'dumps'
     directory = victim
-    
+    delay = 1
     linkedFile = open(root+'\\'+directory+'\\'+victim+'friend_links.html',"wb")
     
     try:
@@ -1190,27 +1190,40 @@ def linkFriends(victim):
         
         except mechanize.HTTPError as e:
                 print e.code
+                print 'Sleeping %d' %delay
+                sleep(delay)
+                delay += 1
         except mechanize.URLError as e:
                 print e.reason.args
+                print 'Sleeping %d URLerror ' %delay
+                sleep(delay)
+                delay += 1
     
     linkedFile.close()
     
 def getName(userId):
-    try:
-        response = br.open('https://graph.facebook.com/'+str(userId))
-        resultado = response.read()
-        json_dump = json.loads(resultado)
+    delay = 0
+    while delay < 60:
         try:
-            return str(json_dump['username'])
-        except:
-            return str(userId)
-    
-    except mechanize.HTTPError as e:
-            print e.code
-            return str(userId)
-    except mechanize.URLError as e:
-            print e.reason.args
-            return str(userId)
+            response = br.open('https://graph.facebook.com/'+str(userId))
+            resultado = response.read()
+            json_dump = json.loads(resultado)
+            try:
+                return str(json_dump['username'])
+            except:
+                return str(userId)
+        
+        except mechanize.HTTPError as e:
+                print str(e.code) + 'Increasing delay %d' %delay
+                delay += 30 
+                sleep(delay)
+        except mechanize.URLError as e:
+                print str(e.reason.args)  + 'Increasing delay %d' %delay
+                delay += 30
+                sleep(delay)
+                
+    #In case the while ends
+    return str(userId)
 
 
 def mkdir(directory,root):
@@ -1725,7 +1738,8 @@ def checkPrivacy(victim):
             resultado = response.read()
             match = re.search('All Friends',resultado)
             matchBis = re.search('Todos los amigos',resultado)
-            if ((match is not None) or (matchBis is not None)):
+            matchBisBis = re.search('Todos mis amigos',resultado)
+            if ((match is not None) or (matchBis is not None) or (matchBisBis is not None)):
                 matchFriends = re.search('id="friendsTypeaheadResults(.+)"',resultado).group()
                 return matchFriends 
             else:
@@ -1804,7 +1818,7 @@ def friendshipPlot(text,victim):
             start = matchStart.end()
             matchEnd = re.search("\?",text[start:])
             name = text[start:matchEnd.start()+start]
-            if name not in friends:
+            if (name not in friends) and (name != "profile.php"):
                 friends.append(name)
                 fbid = getUserID(name)
                 if fbid is not -1:
@@ -1825,12 +1839,11 @@ def friendshipPlot(text,victim):
                     json_dump = json.loads(to_parse)
                     text = json_dump["payload"]
                 except:
-                    print 'Error on json loading'
-                    return 
+                    print 'Error on json loading' 
                 
             except:
                 print 'ERROR MOTHER FUCKER'
-    return friendsID
+    return friendsID, friends
 
 def coreFriendshipPrivacy(victim,transitive):
     friends = []
@@ -1840,6 +1853,7 @@ def coreFriendshipPrivacy(victim,transitive):
         match = re.search('timelineFriendsColumnHeader',resultado)
         if match is not None:
             linea = re.search('timelineFriendsColumnHeader(.+)',resultado).group()
+
 
     except mechanize.HTTPError as e:
             print e.code
@@ -1861,11 +1875,13 @@ def coreFriendshipPrivacy(victim,transitive):
             #Search the string to get the position of the starting match
             matchAnd = re.search('user\.php\?id=',linea[start:])
             #Search the end of the match for taking the id length
-            matchEnd = re.search('">',linea[start+matchAnd.end():])
+            matchEnd = re.search('&amp',linea[start+matchAnd.end():])
             #If we have a start and an end, we have the id value   
             if (matchAnd and matchEnd) is not None:
                 #Appends the value given the proper position (resolved a few lines up)
-                friends.append(linea[start+matchAnd.end():start+matchEnd.start()+matchAnd.end() ])
+                toUserID = linea[start+matchAnd.end():start+matchEnd.start()+matchAnd.end()]
+                if toUserID not in friends:
+                    friends.append(toUserID)
                 #Moves the pointer for next match
                 start += matchEnd.start()+matchAnd.end()
         #If the match ends (Equals of end of the line for the search)
@@ -1977,7 +1993,7 @@ def dotFile(victim, transitive):
     mkdir(directory,root)
     
     myGraph = open(root+'\\'+directory+'\\'+victim+'_dot.dot',"wb")
-    myGraph.write('strict digraph {\n')
+    myGraph.write('Graph {\n')
     
     #Percentage container
     percentage = 0.0
@@ -2013,15 +2029,16 @@ def dotFile(victim, transitive):
     #Stores non repetitive values in the disclosed friends container
     transitivo = getName(transitive)
     for individuos in result:
-        if individuos not in visited:          
-            myGraph.write('    "'+transitivo + '" -> "' + getName(individuos) + '";\n')
+        if individuos not in visited:
+            chabon = getName(individuos)
+            myGraph.write('    "'+transitivo + '" -> "' + chabon + '";\n')          
             friendships.append(individuos)
-    
+    visited.append(getUserID(transitive))
     #Counter for percentage calculus purpose 
     i = 0.0
     #flush
     print '\r                                                        \r',
-    #For every value in the first disclosed list, repeats until every value has been tryed    
+    #For every value in the first disclosed list, repeats until every value has been tried    
     for friends in friendships:
         #Percentage calculus 
         percentage = (i * 100.0)/len(friendships)
@@ -2030,7 +2047,7 @@ def dotFile(victim, transitive):
         i+=1
         #Only if the node wasn't visited 
         if friends not in visited:
-            #if coreFriendshipPrivacy() fails, an exception is caught. Therefore, state wis still being True. 
+            #if coreFriendshipPrivacy() fails, an exception is caught. Therefore, state will still be True. 
             #Only if the try passes, the infinite while will end. (For internet error connection problem)
             state = True
             while state == True:
@@ -2045,7 +2062,13 @@ def dotFile(victim, transitive):
                 except:
                     logs('Check the internet connection please.. Press enter when it\'s done')
                     print '\r                                                                       \r',
-                    raw_input('\rCheck the internet connection please.. Press enter when it\'s done\r'),
+                    a = raw_input('\rCheck the internet connection please.. Press enter when it\'s done\r')
+                    if a == 1:
+                        state = False
+                    else:
+                        if a == 2:
+                            email,password = setMail()
+                            login(email,password,'real')
             
             #Stores non repetitive values in the disclosed friends container
             friendName = getName(friends)    
@@ -2055,7 +2078,7 @@ def dotFile(victim, transitive):
                     myGraph.write('    "'+friendName + '" -> "' + transitive + '";\n')
                     friendships.append(element)
             
-            #Stores every single value of friendships list alredy analyzed for non repetitivness
+            #Stores every single value of friendships list already analysed for non repetitiveness
             visited.append(friends)
             
     #Check if the file exists, if true append, else create and writes
@@ -2064,7 +2087,7 @@ def dotFile(victim, transitive):
     except:
         friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
         
-    #Stores every userID for further analyzis
+    #Stores every userID for further analysis
     for friends in friendships:
         transitivo = getName(friends)
         myGraph.write('    "'+victim + '" -> "' + transitivo + '";\n')
@@ -2081,29 +2104,31 @@ def simpleDotGraph(friends, victim):
     mkdir(directory,root)
     
     myGraph = open(root+'\\'+directory+'\\'+victim+'_dot.dot',"wb")
-    myGraph.write('strict digraph {\n')
-    #Check if the file exists, if true append, else create and writes
-    try:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
-    except:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
-        
+    myGraph.write('Graph    {\n')
+    
+  
+    friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
     for friend in friends:
-        
         friendshipFile.write(str(friend)+'\n')
-        
+    friendshipFile.close()
+    
+    
+    for friend in friends:
         try:
             mutual = coreFriendshipPrivacy(victim, friend)
         except:
             continue
-
+        
+              
         transitive = getName(friend)
+            
         myGraph.write('    "'+victim + '" -> "' + transitive + '";\n')
-
+        
         for element in mutual:
+
             mutualFriend = getName(element)
+                
             myGraph.write('    "'+transitive + '" -> "' + mutualFriend + '";\n')
 
     myGraph.write('}')    
-    friendshipFile.close()
     myGraph.close()
