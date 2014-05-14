@@ -208,7 +208,7 @@ def main():
                     videoID = raw_input('Insert the video ID (watch?v=): ')
                     comment = raw_input('Insert a comment for the post associated to the video: ')
                     hijackedVideo = raw_input('Insert the ID for the hijacked video (watch?v=): ')
-                    hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo)
+                    hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo,privacy[option])
                 else:
                     print "Wrong privacy value, try again "
 
