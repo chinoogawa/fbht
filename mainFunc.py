@@ -26,7 +26,7 @@ try:
     from networkx.drawing.nx_agraph import write_dot
     from base64 import b64encode
     import sys,os
-    import conchatuma231
+    #import conchatuma231
 except ImportError,e:
     print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
     wishToContinue()
