@@ -16,6 +16,14 @@ import community
 from networkx.drawing.nx_agraph import write_dot
 from base64 import b64encode
 
+def validatePath(_path):
+    """By default the script uses nt paths, if a posix os is detected paths will be adjusted"""
+    if os.name == "nt":
+        return _path
+    else:
+        r = _path.replace("\\","/")
+        return r 
+
 def setGlobalLogginng():
     global globalLogging
     globalLogging = not globalLogging
