@@ -26,7 +26,7 @@ def validatePath(_path):
     if os.name == "nt":
         return _path
     else:
-        r = _path.replace("\\\\","/")
+        r = _path.replace("\\","/")
         return r 
 
 
@@ -285,7 +285,7 @@ def main():
                 counter = 0
                 postId = []
                 
-                print 'Insert the Post ID\'s (Must be from a page). If no more posts for adding,insert \'0\' :'
+                print "Insert the Post ID's (Must be from a page). If no more posts for adding,insert '0' :"
                 while True:
                     response = raw_input('post[%d]:'%counter)
                     if ( response is not '0' ):
@@ -336,7 +336,8 @@ def main():
             if (login(email,password,'real'))!= -1:
                 victim = raw_input('Insert the victim username or userId: ')
                 transitive = raw_input('Insert the transitive username or userId: ')
-                print 'The information will be stored in dumps\\%s.txt \n' %victim
+                output = "The information will be stored in dumps\\%s.txt \n"
+                print validatePath(output) % victim
                 bypassFriendshipPrivacy(victim, transitive)
         
         if (int(option) == 14):
