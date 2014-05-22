@@ -336,8 +336,8 @@ def main():
             if (login(email,password,'real'))!= -1:
                 victim = raw_input('Insert the victim username or userId: ')
                 transitive = raw_input('Insert the transitive username or userId: ')
-                output = "The information will be stored in dumps\\%s.txt \n"
-                print validatePath(output) % victim
+                
+                print validatePath("The information will be stored in dumps\\%s.txt \n") % victim
                 bypassFriendshipPrivacy(victim, transitive)
         
         if (int(option) == 14):
@@ -354,7 +354,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    print validatePath('The information will be stored in dumps\\%s\\%s.txt \n') %(victim,victim)
                     bypassFriendshipPrivacyPlot(victim, transitive)
                 else:
                     friendList, friendsName = friendshipPlot(check,victim)
@@ -441,7 +441,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    print validatePath('The information will be stored in dumps\\%s\\%s.txt \n') %(victim,victim)
                     dotFile(victim, transitive)
                 else:
                     print 'Friends publicly available ;D'
