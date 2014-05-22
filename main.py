@@ -1,9 +1,28 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS
-from database import connect,status
-from time import time
-import signal
-from handlers import *
-from sys import stdin
+def wishToContinue():
+    choice = raw_input('Do you wish to continue? (y/n): ')
+    if choice == 'y':
+        pass       
+    elif choice == 'n':
+        exit(1)
+    else:
+        print('Please select a valid option')
+        wishToContinue()
+
+try:
+    from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS
+    from database import connect,status
+    from time import time
+    import signal
+    from handlers import *
+    from sys import stdin
+    import os
+    import conchatuma
+except ImportError,e:
+    print "The following error ocurred: %s. Some options may not work, proceed at own risk" % e
+    wishToContinue()
+
+
+
 
 globalLogin = False
 globalEmail = ''
