@@ -16,9 +16,9 @@ try:
     from handlers import *
     from sys import stdin
     import os
-    import conchatuma
+    #import conchatuma23
 except ImportError,e:
-    print "The following error ocurred: %s. Some options may not work, proceed at own risk" % e
+    print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
     wishToContinue()
 
 globalLogin = False
