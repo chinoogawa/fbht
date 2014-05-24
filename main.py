@@ -9,13 +9,13 @@ def wishToContinue():
         wishToContinue()
 
 try:
-    from mainFunc import validatePath,privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS
+    import os
+    from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS
     from database import connect,status
     from time import time
     import signal
     from handlers import *
     from sys import stdin
-    import os
     #import conchatuma23
 except ImportError,e:
     print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
@@ -328,7 +328,7 @@ def main():
                 victim = raw_input('Insert the victim username or userId: ')
                 transitive = raw_input('Insert the transitive username or userId: ')
                 
-                print validatePath("The information will be stored in dumps\\%s.txt \n") % victim
+                print "The information will be stored in %s. \n" % os.path.join("dumps",victim+".txt")
                 bypassFriendshipPrivacy(victim, transitive)
         
         if (int(option) == 14):
@@ -345,7 +345,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print validatePath('The information will be stored in dumps\\%s\\%s.txt \n') %(victim,victim)
+                    print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     bypassFriendshipPrivacyPlot(victim, transitive)
                 else:
                     friendList, friendsName = friendshipPlot(check,victim)
@@ -432,7 +432,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print validatePath('The information will be stored in dumps\\%s\\%s.txt \n') %(victim,victim)
+                    print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     dotFile(victim, transitive)
                 else:
                     print 'Friends publicly available ;D'

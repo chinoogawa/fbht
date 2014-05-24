@@ -30,6 +30,8 @@ try:
 except ImportError,e:
     print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
     wishToContinue()
+'''
+Deprecated, should be deleted in future commit
 
 def validatePath(_path):
     """By default the script uses nt paths, if a posix os is detected paths will be adjusted"""
@@ -38,7 +40,7 @@ def validatePath(_path):
     else:
         r = _path.replace("\\","/")
         return r 
-
+'''
 def setGlobalLogginng():
     global globalLogging
     globalLogging = not globalLogging
@@ -347,23 +349,26 @@ def sendRequestToList(victim):
     
     try:
         try:
-            persons = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+            #persons = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+            persons = open( os.path.join(root,directory,victim+".txt"),"rb" )
         except:
             logs('Friend file not found')
             print 'Friend file not found'
             return
         try:
-            persons_send = open(validatePath(root+'\\'+directory+'\\'+victim+'_friend_send.txt'),"rb")
+            #persons_send = open(validatePath(root+'\\'+directory+'\\'+victim+'_friend_send.txt'),"rb")
+            persons_send = open( os.path.join(root,directory,victim+"_friend_send.txt"),"rb")
             while True:
                 linea = persons_send.readline()
                 if not linea:
                     break
                 frieds_send.append(linea.strip("\n\r"))
             persons_send.close()
-            persons_send = open(validatePath(root+'\\'+directory+'\\'+victim+'_friend_send.txt'),"ab")
+            #persons_send = open(validatePath(root+'\\'+directory+'\\'+victim+'_friend_send.txt'),"ab")
+            persons_send = open(os.path.join(root,directory,victim+"_friend_send.txt"),"ab")
         except:
-            persons_send = open(validatePath(root+'\\'+directory+'\\'+victim+'_friend_send.txt'),"wb")
-            
+            #persons_send = open(validatePath(root+'\\'+directory+'\\'+victim+'_friend_send.txt'),"wb")
+            persons_send = open(os.path.join(root,directory,victim+"_friend_send.txt"),"wb")
         while True:
             linea = persons.readline()
             if not linea:
@@ -1177,10 +1182,12 @@ def linkFriends(victim):
     root = 'dumps'
     directory = victim
     delay = 1
-    linkedFile = open(validatePath(root+'\\'+directory+'\\'+victim+'friend_links.html'),"wb")
+    #linkedFile = open(validatePath(root+'\\'+directory+'\\'+victim+'friend_links.html'),"wb")
+    linkedFile = open( os.path.join(root,directory,victim+"friend_links.html"),"wb")
     
     try:
-        persons = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+        #persons = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+        persons = open( os.path.join(root,directory,victim+".txt") ,"rb")
     except:
         print '\r                                                        \r',
         print '\r %s.txt not exists, error on linkFriends module \r' %victim,
@@ -1251,14 +1258,15 @@ def getName(userId):
 def mkdir(directory,root):
     import os
     
-    if os.path.exists(validatePath(root+'\\'+directory)):
+    if os.path.exists(os.path.join(root,directory)):
         return 
     else:
-        os.makedirs(validatePath(root+'\\'+directory))
+        os.makedirs(os.path.join(root,directory))
          
 
 def saveObjects(victim,matrix,ref):
-    path = validatePath('dumps\\'+victim+'\\objects\\'+victim)
+    #path = validatePath('dumps\\'+victim+'\\objects\\'+victim)
+    path = os.path.join("dumps",victim,"objects",victim)
     f = open(path,"wb")
     pickle.dump(matrix,f)
     g = open(path+'.ref',"wb")
@@ -1268,10 +1276,11 @@ def saveObjects(victim,matrix,ref):
     
 def loadObjects(victim):
     try:
-        path = validatePath('dumps\\'+victim+'\\objects\\'+victim)
-        f = open(validatePath(path),"rb")
+        #path = validatePath('dumps\\'+victim+'\\objects\\'+victim)
+        path = os.path.join("dumps",victim,"objects",victim)
+        f = open(path,"rb")
         A = pickle.load(f)
-        g = open( validatePath(path +'.ref'),"rb")
+        g = open( path +'.ref',"rb")
         ref = pickle.load(g)
         g.close()
         f.close()
@@ -1281,7 +1290,8 @@ def loadObjects(victim):
 
 def reAnalyzeGraph(victim):
     try:
-        f = open(validatePath('dumps\\'+victim+'\\objects\\'+victim+'-community'),"rb")
+        #f = open(validatePath('dumps\\'+victim+'\\objects\\'+victim+'-community'),"rb")
+        f = open( os.path.join("dumps",victim,"objects",victim+"-community" ) ,"rb")
         labelGraph = pickle.load(f)
         f.close()
     except:
@@ -1306,9 +1316,12 @@ def reAnalyzeGraph(victim):
             
                 
             nx.draw_spring(egonet,node_color = np.linspace(0,1,len(egonet.nodes())),edge_color = '#000000' ,with_labels=True)
-            plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".pdf"))
-            plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".png"))
-            write_dot(validatePath(egonet,root+"\\"+directory+"\\"+victim+"Community"+str(i)+".dot"))			
+            #plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".pdf"))
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".pdf") )
+            #plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".png"))
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".png") )
+            #write_dot(validatePath(egonet,root+"\\"+directory+"\\"+victim+"Community"+str(i)+".dot"))	
+            write_dot(egonet, os.path.join(root,directory,victim+"Community"+str(i)+".dot") )		
             plt.show()
            
             
@@ -1356,8 +1369,8 @@ def analyzeGraph(victim):
             print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(idkeys.keys()), percentage), 
             i+=1
         
-        reference = open(validatePath(root+"\\"+directory+"\\"+victim+"references.txt"),"wb")
-            
+        #reference = open(validatePath(root+"\\"+directory+"\\"+victim+"references.txt"),"wb")
+        reference = open( os.path.join(root,directory,victim+"references.txt") ,"wb")    
         for users in nodekeys.keys():
             line = str(nodekeys[users])+' : '+str(users) 
             reference.write(line + '\n')
@@ -1398,13 +1411,17 @@ def analyzeGraph(victim):
             labelGraph.add_edge(nodekeys[int(labelE[0])],nodekeys[int(labelE[1])])
         
         nx.draw_spring(labelGraph,node_color = np.linspace(0,1,len(labelGraph.nodes())),edge_color = np.linspace(0,1,len(labelGraph.edges())) ,with_labels=True)
-        plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"labelGraph_color.pdf"))
-        plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"labelGraph_color.png"))
-        write_dot(validatePath(labelGraph,root+'\\'+directory+'\\'+victim+"labelGraph_color.dot"))    
+        #plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"labelGraph_color.pdf"))
+        plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.pdf") )
+        #plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"labelGraph_color.png"))
+        plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.png") )
+        #write_dot(validatePath(labelGraph,root+'\\'+directory+'\\'+victim+"labelGraph_color.dot")) 
+        write_dot(labelGraph, os.path.join(root,directory,victim+"labelGraph_color.dot") )    
         plt.show()
         
         #Saving the object for future analysis
-        f = open(validatePath('dumps\\'+victim+'\\objects\\'+victim+'-community'),"wb")
+        #f = open(validatePath('dumps\\'+victim+'\\objects\\'+victim+'-community'),"wb")
+        f = open( os.path.join("dumps",victim,"objects",victim+"-community") ,"wb")
         pickle.dump(labelGraph,f)
         f.close()
         
@@ -1431,9 +1448,12 @@ def analyzeGraph(victim):
             
                 
             nx.draw_spring(egonet,node_color = np.linspace(0,1,len(egonet.nodes())),edge_color = '#000000' ,with_labels=True)
-            plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".pdf"))
-            plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".png"))
-            write_dot(validatePath(egonet,root+"\\"+directory+"\\"+victim+"Community"+str(i)+".dot"))				
+            #plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".pdf"))
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".pdf") )
+            #plt.savefig(validatePath(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".png"))
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".png") )
+            #write_dot(validatePath(egonet,root+"\\"+directory+"\\"+victim+"Community"+str(i)+".dot"))	
+            write_dot(egonet, os.path.join(root,directory,victim+"Community"+str(i)+".dot") )   			
             plt.show()
            
             
@@ -1472,7 +1492,8 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -1491,7 +1512,8 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     
     except:
         #If the file does not exists, creates the file
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
         friendshipFile.close()
      
     
@@ -1579,10 +1601,11 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
             
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"ab")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"ab")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"ab")
     except:
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
-        
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
     #Stores every userID for further analyzis
     for friends in friendships:
         if coleccion.has_key(friends) == False:
@@ -1598,15 +1621,18 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     
     friendshipFile.close()
     
-    mkdir('objects',validatePath(root+'\\'+directory))
-    
+    #mkdir('objects',validatePath(root+'\\'+directory))
+    mkdir('objects', os.path.join(root,directory))
     A = nx.adj_matrix(myGraph)
     saveObjects(victim, A, coleccion)
     
     nx.draw_spring(myGraph,node_color = np.linspace(0,1,len(myGraph.nodes())),edge_color = np.linspace(0,1,len(myGraph.edges())) ,with_labels=True)
-    plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.pdf"))
-    plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.png"))
-    write_dot(myGraph,validatePath(root+'\\'+directory+'\\'+victim+"graph_color.dot"))	
+    #plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.pdf"))
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.pdf") )
+    #plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.png"))
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.png") )
+    #write_dot(myGraph,validatePath(root+'\\'+directory+'\\'+victim+"graph_color.dot"))	
+    write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.dot"))  
     plt.show()
 
    
@@ -1620,7 +1646,8 @@ def bypassFriendshipPrivacy(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"rb")
+        #friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"rb")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -1633,7 +1660,8 @@ def bypassFriendshipPrivacy(victim, transitive):
     
     except:
         #If the file does not exists, creates the file
-        friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"wb")
+        #friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"wb")
         friendshipFile.close()
      
     
@@ -1688,10 +1716,12 @@ def bypassFriendshipPrivacy(victim, transitive):
             
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"ab")
+        #friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"ab")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"ab")
     except:
-        friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"wb")
-        
+        #friendshipFile = open(validatePath('dumps\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"wb")
+
     #Stores every userID for further analyzis
     for friends in friendships:
         friendshipFile.write(str(friends)+'\n')
@@ -1788,10 +1818,12 @@ def simpleGraph(friends, victim):
     nodeID += 1
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"ab")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"ab")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt"),"ab")
     except:
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
-        
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt"),"wb")
+
     for friend in friends:
         
         friendshipFile.write(str(friend)+'\n')
@@ -1824,9 +1856,12 @@ def simpleGraph(friends, victim):
     saveObjects(victim, A, coleccion)
     
     nx.draw_spring(myGraph,node_color = np.linspace(0,1,len(myGraph.nodes())),edge_color = np.linspace(0,1,len(myGraph.edges())) ,with_labels=True)
-    plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.pdf"))
-    plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.png"))
-    write_dot(validatePath(myGraph,root+'\\'+directory+'\\'+victim+"graph_color.dot"))    
+    #plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.pdf"))
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.pdf") )
+    #plt.savefig(validatePath(root+'\\'+directory+'\\'+victim+"graph_color.png"))
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.png") )
+    #write_dot(validatePath(myGraph,root+'\\'+directory+'\\'+victim+"graph_color.dot"))    
+    write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.png"))  
     plt.show()
     
 def friendshipPlot(text,victim):
@@ -1998,9 +2033,11 @@ def getUserID(user):
     
 def logs(messagelog):
     try:
-        f = open("logs\\error.log","ab")
+        #f = open("logs\\error.log","ab")
+        f = open( os.path.join("logs","error.log") ,"ab")
     except:
-        f = open("logs\\error.log","wb")
+        #f = open("logs\\error.log","wb")
+        f = open( os.path.join("logs","error.log") ,"wb")
     cTime = ctime(time())
     log = str(cTime) + ' : ' + str(messagelog) + '\n'
     f.write(log)
@@ -2014,7 +2051,8 @@ def dotFile(victim, transitive):
     
     mkdir(directory,root)
     
-    myGraph = open(validatePath(root+'\\'+directory+'\\'+victim+'_dot.dot'),"wb")
+    #myGraph = open(validatePath(root+'\\'+directory+'\\'+victim+'_dot.dot'),"wb")
+    myGraph = open( os.path.join(root,directory,victim+"_dot.dot") ,"wb")
     myGraph.write('Graph {\n')
     
     #Percentage container
@@ -2025,7 +2063,8 @@ def dotFile(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"rb")
+        friendshipFile = open( os.path.jion(root,directory,victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -2037,7 +2076,8 @@ def dotFile(victim, transitive):
 
     except:
         #If the file does not exists, creates the file
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
         friendshipFile.close()
      
     
@@ -2105,9 +2145,11 @@ def dotFile(victim, transitive):
             
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"ab")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"ab")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"ab")
     except:
-        friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
         
     #Stores every userID for further analysis
     for friends in friendships:
@@ -2125,11 +2167,13 @@ def simpleDotGraph(friends, victim):
     
     mkdir(directory,root)
     
-    myGraph = open(validatePath(root+'\\'+directory+'\\'+victim+'_dot.dot'),"wb")
+    #myGraph = open(validatePath(root+'\\'+directory+'\\'+victim+'_dot.dot'),"wb")
+    myGraph = open( os.path.join(root,directory,victim+"_dot.dot"),"wb")
     myGraph.write('Graph    {\n')
     
   
-    friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+    #friendshipFile = open(validatePath(root+'\\'+directory+'\\'+victim+'.txt'),"wb")
+    friendshipFile = open( os.path.join(root,directory,victim+".txt"),"wb")
     for friend in friends:
         friendshipFile.write(str(friend)+'\n')
     friendshipFile.close()
