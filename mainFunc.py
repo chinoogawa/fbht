@@ -15,6 +15,7 @@ import numpy as np
 import community
 from networkx.drawing.nx_agraph import write_dot
 from base64 import b64encode
+import logging
 
 def setGlobalLogginng():
     global globalLogging
@@ -1974,14 +1975,10 @@ def getUserID(user):
             return -1
     
 def logs(messagelog):
-    try:
-        f = open("logs\\error.log","ab")
-    except:
-        f = open("logs\\error.log","wb")
+    logging.basicConfig(filename='logs\\error.log',level=logging.DEBUG)
     cTime = ctime(time())
     log = str(cTime) + ' : ' + str(messagelog) + '\n'
-    f.write(log)
-    f.close()
+    logging.debug(log) 
     
     
 def dotFile(victim, transitive):
