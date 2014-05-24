@@ -1975,7 +1975,7 @@ def getUserID(user):
             return -1
     
 def logs(messagelog):
-    logging.basicConfig(filename='logs/error.log',level=logging.DEBUG)
+    logging.basicConfig(filename='logs\\error.log',level=logging.DEBUG)
     cTime = ctime(time())
     log = str(cTime) + ' : ' + str(messagelog) + '\n'
     logging.debug(log) 
