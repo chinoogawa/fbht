@@ -27,7 +27,7 @@ try:
     from networkx.drawing.nx_agraph import write_dot
     from base64 import b64encode
     import logging
-	from mechanize import Request
+    from mechanize import Request
 except ImportError,e:
     print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
     wishToContinue()
