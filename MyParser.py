@@ -13,6 +13,29 @@ def htmlFormat(json_dump):
     html = "<p><img src=\"https://graph.facebook.com/%s/picture\" > Name: %s - Link: <a href=\"%s\">facebook profile</a> - Gender: %s -Locale: %s</p>" %(json_dump['username'],json_dump['name'], json_dump['link'], json_dump['gender'], json_dump['locale']) 
     return html
 
+def parceros(json_dump):
+    parser = MyHTMLParser()
+    parser.array()
+    names = []
+    userIds = []
+    try:
+        to_parse = str(json_dump['domops'][0][3]['__html'])
+        parser.feed(to_parse)
+    except:
+        print 'Error in json dump or parser.feed'
+    i = 6
+    while i < (len(parser.dataArray) - 2):
+        names.append(parser.dataArray[i])
+        userIds.append(parser.dataArray[i+1])
+        i = i + 4
+
+    if ( userIds!=[] and names!=[]):
+        database.insertTestUsersDev(userIds,names)
+        return 1
+    else:
+        return -1    
+
+
 def parseData(dataRaw):
     parser = MyHTMLParser()
     parser.array()
