@@ -16,7 +16,6 @@ try:
     import signal
     from handlers import *
     from sys import stdin
-    #import conchatuma23
 except ImportError,e:
     print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
     wishToContinue()

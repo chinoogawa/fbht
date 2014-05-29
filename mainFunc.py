@@ -8,6 +8,7 @@ def wishToContinue():
         print('Please select a valid option')
         wishToContinue()
 try:
+    import sys,os
     from getpass import getpass
     from mainLib import *
     import MyParser 
@@ -25,8 +26,7 @@ try:
     import community
     from networkx.drawing.nx_agraph import write_dot
     from base64 import b64encode
-    import sys,os
-    #import conchatuma231
+    import logging
 except ImportError,e:
     print "The following error ocurred: %s @ %s. Some options may not work." % (e,os.path.basename(__file__))
     wishToContinue()
@@ -2032,16 +2032,11 @@ def getUserID(user):
             return -1
     
 def logs(messagelog):
-    try:
-        #f = open("logs\\error.log","ab")
-        f = open( os.path.join("logs","error.log") ,"ab")
-    except:
-        #f = open("logs\\error.log","wb")
-        f = open( os.path.join("logs","error.log") ,"wb")
+    
+    logging.basicConfig(filename=os.path.join("logs","error.log"), level=logging.NOTSET, format='')
     cTime = ctime(time())
-    log = str(cTime) + ' : ' + str(messagelog) + '\n'
-    f.write(log)
-    f.close()
+    log = str(cTime) + ' : ' + str(messagelog)
+    logging.debug(log)
     
     
 def dotFile(victim, transitive):
