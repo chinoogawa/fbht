@@ -1,7 +1,7 @@
 from getpass import getpass
 from mainLib import *
 import MyParser 
-from urllib import urlencode
+from urllib import urlencode 
 import simplejson as json
 import database
 from time import time,ctime,sleep
@@ -15,6 +15,7 @@ import numpy as np
 import community
 from networkx.drawing.nx_agraph import write_dot
 from base64 import b64encode
+from mechanize import Request
 
 def setGlobalLogginng():
     global globalLogging
@@ -251,16 +252,19 @@ def massLogin():
     #Flush
     print '\r                                                        \r',
     
+    loadPersistentCookie()
+    
     for person in people:
         #login
-        rsp = login(str(person[2]),str(person[3]),'test')
+        rsp = login(str(person[0]),str(person[3]),'test')
         #percentage
         i+=1
         percentage = (i * 100.0) / len(people)
         print '\rCompleted [%.2f%%]\r'%percentage,
         if rsp == -1:
             database.removeTestUsers(person[0])
-                    
+    
+    savePersistentCookie()               
             
 def friendshipRequest():
     if (len(cookieArray) == 1):
@@ -461,19 +465,22 @@ def savePersistentCookie():
     
 def loadPersistentCookie():
     global cookieArray
-    f = open("cookiesObject","r")
-    cookieArray = pickle.load(f)
-    i = 0
-    ''' Se limpian las cookies que no sirven - se filtra el id para cambiar su estado a logged = 0 '''
-    for cookie in cookieArray:
-        cj._cookies = cookie
-        for element in cj:
-            if (element.name == 'checkpoint'):
-                strip = str(element.value).strip("%7B%22u%22%3A")
-                removeId = strip.split("%2C%22t%22%3A")[0]
-                database.setLoggedOut(removeId)
-                del cookieArray[i]
-        i+=1
+    try:
+        f = open("cookiesObject","r")
+        cookieArray = pickle.load(f)
+        i = 0
+        ''' Se limpian las cookies que no sirven - se filtra el id para cambiar su estado a logged = 0 '''
+        for cookie in cookieArray:
+            cj._cookies = cookie
+            for element in cj:
+                if (element.name == 'checkpoint'):
+                    strip = str(element.value).strip("%7B%22u%22%3A")
+                    removeId = strip.split("%2C%22t%22%3A")[0]
+                    database.setLoggedOut(removeId)
+                    del cookieArray[i]
+            i+=1
+    except:
+        return
             
 def deleteAccounts():
     people = database.getUsers()
@@ -2170,4 +2177,236 @@ def noteDDoS(imageURL,noteID, privacy):
     except:
         logs('Error in the DDoS module')
         print '\rError in the DDoS module\r'
+        raise
+    
+def devTest(appID):
+    set_dtsg()
+    dtsg = br.form['fb_dtsg']
+    br.open('https://developers.facebook.com/').read()
+    arguments = {   
+        'fb_dtsg' : dtsg,
+        'count' : '4',
+        'app_id' : str(appID),
+        'install_app' : '1',
+        'platform_version' : 'v2.0',
+        'enable_ticker' : '1',
+        'language' : 'en_US',
+        '__user' : getC_user(), 
+        '__a' : '1',
+        '__dyn' : '7w86i1PyUnxqnFwn8',
+        '__req' : '3',
+        'ttstamp' : '2658172110116109767311810511273',
+        '__rev' : '1262242'
+        }
+    
+    datos = urlencode(arguments)
+    try:
+        response = br.open('https://developers.facebook.com/apps/async/test-users/create/',datos)
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in devTest module')
+        print '\rError in devTest module\r'
+        raise
+'''    
+def getTest(appID):
+    try:
+        response = br.open('https://developers.facebook.com/apps/'+appID+'/roles/test-users/')
+        
+        linea = response.read()
+        lines = []
+        
+        match = re.search('test_users'+'(.+)',linea)
+        if match is not None:
+            encontrada =  match.group()
+        
+        start = 0
+        while True:
+            matchstart = re.search('test_user_ids',encontrada[start:])
+            if matchstart is not None:
+                matchend = re.search('\.net',encontrada[start+matchstart.end():])
+                if (matchstart is not None) and (matchend is not None):
+                    final = encontrada[start+matchstart.start() : matchend.end()+start+matchstart.end()]
+                    lines.append(final)
+                    start = start+matchstart.start()+matchend.end()
+            else:
+                break
+        
+        email = []
+        name = []
+        userid = []
+        for linea in lines:
+            matchstart =re.search('value="',linea)
+            matchend = re.search('"',linea[matchstart.end():])
+            userid.append(linea[matchstart.end():matchstart.end()+matchend.start()])
+        for linea in lines:
+            start=0
+            while True:
+                matchstart = re.search("\"_50f4\">",linea[start:])
+                if matchstart is not None:
+                    matchend = re.search('</span>',linea[start+matchstart.end():])
+                    if (matchstart is not None) and (matchend is not None):
+                        final = linea[start+matchstart.end() : matchend.start()+start+matchstart.end()]
+                        name.append(final)
+                        start = start+matchstart.start()+matchend.end()
+                        matchstart = re.search("_5jxf\"><span class=\"_50f4\">",linea[start:])
+                        if matchstart is not None:
+                            email.append(linea[matchstart.end()+start:].replace('&#064;','@'))
+                            break
+                        else:
+                            print 'error'
+                else:
+                    break
+    
+        for elements in email:
+            print elements
+        for elements in name:
+            print elements
+        for elements in userid:
+            print elements
+        
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in getTest module')
+        print '\rError in getTest module\r'
         raise 
+'''
+def getTest(appID):
+    try:
+        start = 0
+        flag = 0
+        while flag != -1:
+            
+            set_dtsg()
+            dtsg = br.form['fb_dtsg']
+            arguments = {   
+                'start' : str(start),
+                '__user' : getC_user(),
+                '__a' : '1',
+                '__dyn' : '7w86i1PyUnxqnFwn8',
+                '__req' : '4',
+                'fb_dtsg' : dtsg,
+                'ttstamp' : '26581707111311350113871144898',
+                '__rev' : '1262242'
+            }
+            datos = urlencode(arguments)
+            try:
+                response = br.open('https://developers.facebook.com/apps/'+appID+'/roles/test-users/paging/',datos)
+                aParsear = response.read().strip("for (;;);")
+                json_dump = json.loads(aParsear)
+                flag = MyParser.parceros(json_dump)
+                start += 20 
+                print ' 20 cuentas creadas'
+            except:
+                break
+    except:
+        print 'general error'
+
+def changePassword(appID):        
+    people = database.getUsers()
+    peopleLogged = database.getUsersNotLogged()
+    for persona in people:
+        if persona in peopleLogged:
+            try:
+                set_dtsg()
+                dtsg = br.form['fb_dtsg']
+                arguments = { 
+                    'fb_dtsg' : dtsg,  
+                    'name' : str(persona[1]),
+                    'password' : '1234567890',
+                    'confirm_password' : '1234567890',
+                    '__user' : getC_user(),
+                    '__a' : '1',
+                    '__dyn' : '7w86i1PyUnxqnFwn8',
+                    '__req' : 'a',
+                    'ttstamp' : '26581698582558910610211811276',
+                    '__rev' : '1262776'
+                }
+                datos = urlencode(arguments)
+                try:
+                    response = br.open('https://developers.facebook.com/apps/async/test-users/edit/?app_id='+appID+'&test_user_id='+str(persona[0]),datos)
+                except:
+                    print 'error'
+            except:
+                print 'Error General'
+        
+        
+        
+def likeDev(postId, quantity,appID):
+        
+    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        #Cookie of the real account
+        masterCookie = cj._cookies
+        times = int(quantity) / 4
+        
+        massLogin()
+        #Percentage container
+        percentage = 0.0
+        j = 0.0
+        total = len(cookieArray) * len(postId)
+        #flush
+        print '\r                                                        \r',
+        
+        for i in range(len(cookieArray)):
+            for post in range(len(postId)):
+                cj._cookies = cookieArray[i]
+                c_user = getC_user()
+                try:
+                    set_dtsg()
+                    
+                    arguments = {
+                        'like_action' : 'true',
+                        'ft_ent_identifier' : str(postId[post]),
+                        'source' : '0',
+                        'client_id' : str(c_user)+'%3A4047576437',
+                        'rootid' : 'u_0_2o',
+                        'giftoccasion' : '',
+                        'ft[tn]' : '%3E%3D',
+                        'ft[type]' : '20',
+                        'nctr[_mod]' : 'pagelet_timeline_recent',
+                        '__user' : c_user,
+                        '__a' : '1',
+                        '__dyn' : '7n8ahyj35ym3KiA',
+                        '__req' : 'c',
+                        'fb_dtsg' : br.form['fb_dtsg'],
+                        'phstamp' : '165816595797611370260',
+                    }
+                    
+                                
+                    datos = urlencode(arguments)
+                    response = br.open('https://www.facebook.com/ajax/ufi/like.php',datos)
+                    
+                    if globalLogging:
+                        logs(response.read())
+                    
+                    percentage = (j * 100.0)/total
+                    print '\r[%.2f%%] of likes completed\r' %(percentage), 
+                    j+=1
+                        
+                except mechanize.HTTPError as e:
+                    print e.code
+                    
+                except mechanize.URLError as e:
+                        print e.reason.args  
+                except:
+                    print 'Unknown error' 
+            
+        cj._cookies = masterCookie           
+        raw_input('Finished like() module, press enter to continue')
+    except signalCaught as e:
+        deleteUser()
+        message = '%s catch from create module' %e.args[0]
+        logs(str(message))
+        print '%s \n' %message
+        raw_input('Press enter to continue')
+        return

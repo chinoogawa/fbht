@@ -16,6 +16,15 @@ def insertTestUsers(userId,name,email,password):
              
     connect.commit()
 
+def insertTestUsersDev(userId,name):
+    for i in range(len(userId)):
+        try:
+            cursor.execute("INSERT INTO testUsers (id, name, email, password,logged, blocked) VALUES(?, ?, 0, 1234567890,0,0)", (userId[i], name[i]))
+        except:
+            print 'No se realizo la iteracion %d \n' % i
+             
+    connect.commit()
+
 def removeTestUsers(userId):
     query = "DELETE FROM testUsers WHERE id = %d;" % int(userId)
     try:
