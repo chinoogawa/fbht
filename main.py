@@ -1,27 +1,13 @@
-def wishToContinue():
-    choice = raw_input('Do you wish to continue? (y/n): ')
-    if choice == 'y':
-        pass       
-    elif choice == 'n':
-        exit(1)
-    else:
-        print('Please select a valid option')
-        wishToContinue()
-
-try:
-    from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS
-    from database import connect,status
-    from time import time
-    import signal
-    from handlers import *
-    from sys import stdin
-    import os
-    import conchatuma
-except ImportError,e:
-    print "The following error ocurred: %s. Some options may not work, proceed at own risk" % e
-    wishToContinue()
 
 
+
+import os
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword
+from database import connect,status
+from time import time
+import signal
+from handlers import *
+from sys import stdin
 
 
 globalLogin = False
@@ -76,7 +62,8 @@ def main():
                (int(option) != 17) and (int(option) != 18) and
                (int(option) != 19) and (int(option) != 20) and
                (int(option) != 21) and (int(option) != 22) and 
-               (int(option) != 23) and (int(option) != 24)):
+               (int(option) != 23) and (int(option) != 24) and
+               (int(option) != 25)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -102,7 +89,9 @@ def main():
             print '21) Send friend request to disclosed friend list from your account\n'
             print '22) Bypass friendship (only .dot without graph integration)\n'
             print '23) Note DDoS attack\n'
-            print '24) Close the application\n'
+            print '24) Developer Test Account\n'
+            print '25) Close the application\n'
+
             
             choice = raw_input('Insert your choice: ')
             
@@ -279,7 +268,7 @@ def main():
                 counter = 0
                 postId = []
                 
-                print 'Insert the Post ID\'s (Must be from a page). If no more posts for adding,insert \'0\' :'
+                print "Insert the Post ID's (Must be from a page). If no more posts for adding,insert '0' :"
                 while True:
                     response = raw_input('post[%d]:'%counter)
                     if ( response is not '0' ):
@@ -330,7 +319,8 @@ def main():
             if (login(email,password,'real'))!= -1:
                 victim = raw_input('Insert the victim username or userId: ')
                 transitive = raw_input('Insert the transitive username or userId: ')
-                print 'The information will be stored in dumps\\%s.txt \n' %victim
+                
+                print "The information will be stored in %s. \n" % os.path.join("dumps",victim+".txt")
                 bypassFriendshipPrivacy(victim, transitive)
         
         if (int(option) == 14):
@@ -347,7 +337,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     bypassFriendshipPrivacyPlot(victim, transitive)
                 else:
                     friendList, friendsName = friendshipPlot(check,victim)
@@ -434,7 +424,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     dotFile(victim, transitive)
                 else:
                     print 'Friends publicly available ;D'
@@ -459,9 +449,54 @@ def main():
                     noteDDoS(imageURL,noteID, privacy[option])
         
 
-                    
         if (int(option) == 24):
+            signal.signal(signal.SIGINT, signal_handler)
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+
+            if (login(email,password,'real'))!= -1:
+                signal.signal(signal.SIGINT, signal_handler)
+                try:
+                    counter = 0
+                    postId = []
+                    
+                    print 'Insert the Post ID\'s (Must be from a page). If no more posts for adding,insert \'0\' :'
+                    while True:
+                        response = raw_input('post[%d]:'%counter)
+                        if ( response is not '0' ):
+                            counter+=1
+                            postId.append(response)
+                        else:
+                            break
+                    resp = raw_input('Create new dev accounts? 1|0 : ')
+                    appID = raw_input('Enter Application ID: ')
+                    if resp == str(1):
+                        quantity = raw_input('Insert the amount of accounts: ')
+                        for i in range(int(quantity)/4):
+                            devTest(appID)
+                            
+                        getTest(appID)
+                        changePassword(appID)
+                            
+                  
+                    '''quantity = raw_input('Insert the amount of likes: ')'''
+                    quantity = 1
+                    likeDev(postId,quantity,appID)
+                except EOFError:
+                    print 'EOFError'
+                    stdin.flush()
+                    pass
+                except signalCaught as e:
+                    print ' %s' %e.args[0]  
+   
+
+                    
+        if (int(option) == 25):
             connect.close()
+
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        
             print ' _    _            _      _______ _            _____  _                  _   _  '
