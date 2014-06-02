@@ -17,6 +17,8 @@ from networkx.drawing.nx_agraph import write_dot
 from base64 import b64encode
 from mechanize import Request
 
+masterCj = ''
+
 def setGlobalLogginng():
     global globalLogging
     globalLogging = not globalLogging
@@ -133,7 +135,7 @@ def getC_user():
     for cookie in cj:
         if (cookie.name == 'c_user'):
             c_user = cookie.value
-            return c_user
+            return str(c_user)
         
 def createUser(number):
     
@@ -2180,27 +2182,28 @@ def noteDDoS(imageURL,noteID, privacy):
         raise
     
 def devTest(appID):
-    set_dtsg()
-    dtsg = br.form['fb_dtsg']
-    br.open('https://developers.facebook.com/').read()
-    arguments = {   
-        'fb_dtsg' : dtsg,
-        'count' : '4',
-        'app_id' : str(appID),
-        'install_app' : '1',
-        'platform_version' : 'v2.0',
-        'enable_ticker' : '1',
-        'language' : 'en_US',
-        '__user' : getC_user(), 
-        '__a' : '1',
-        '__dyn' : '7w86i1PyUnxqnFwn8',
-        '__req' : '3',
-        'ttstamp' : '2658172110116109767311810511273',
-        '__rev' : '1262242'
-        }
-    
-    datos = urlencode(arguments)
     try:
+        set_dtsg()
+        dtsg = br.form['fb_dtsg']
+        br.open('https://developers.facebook.com/').read()
+        arguments = {   
+            'fb_dtsg' : dtsg,
+            'count' : '4',
+            'app_id' : str(appID),
+            'install_app' : '1',
+            'platform_version' : 'v2.0',
+            'enable_ticker' : '1',
+            'language' : 'en_US',
+            '__user' : getC_user(), 
+            '__a' : '1',
+            '__dyn' : '7w86i1PyUnxqnFwn8',
+            '__req' : '3',
+            'ttstamp' : '2658172110116109767311810511273',
+            '__rev' : '1262242'
+            }
+        
+        datos = urlencode(arguments)
+        
         response = br.open('https://developers.facebook.com/apps/async/test-users/create/',datos)
     except mechanize.HTTPError as e:
         logs(e.code)
@@ -2212,6 +2215,7 @@ def devTest(appID):
         logs('Error in devTest module')
         print '\rError in devTest module\r'
         raise
+
 '''    
 def getTest(appID):
     try:
@@ -2304,8 +2308,7 @@ def getTest(appID):
                 aParsear = response.read().strip("for (;;);")
                 json_dump = json.loads(aParsear)
                 flag = MyParser.parceros(json_dump)
-                start += 20 
-                print ' 20 cuentas creadas'
+                start+=20
             except:
                 break
     except:
@@ -2341,23 +2344,32 @@ def changePassword(appID):
         
         
         
-def likeDev(postId, quantity,appID):
+def likeDev(postId):
         
     signal.signal(signal.SIGINT, signal_handler)
     try:
         #Cookie of the real account
         masterCookie = cj._cookies
-        times = int(quantity) / 4
-        
         massLogin()
+        
+        if len(cookieArray) == 0:
+            print 'First you must create accounts: option 1) '
+        
+        quantity = raw_input('Insert the amount of likes: ')
+        
+        while int(quantity) <= 0 or int(quantity) >= len(cookieArray):
+            print 'Wrong quantity. First you must create enough accounts for that amount of likes .. (option 1) ..'
+            quantity = raw_input('Insert the amount of likes: ')
+            
+
         #Percentage container
         percentage = 0.0
         j = 0.0
-        total = len(cookieArray) * len(postId)
+        total = int(quantity) * len(postId)
         #flush
         print '\r                                                        \r',
         
-        for i in range(len(cookieArray)):
+        for i in range(int(quantity)):
             for post in range(len(postId)):
                 cj._cookies = cookieArray[i]
                 c_user = getC_user()
@@ -2410,3 +2422,150 @@ def likeDev(postId, quantity,appID):
         print '%s \n' %message
         raw_input('Press enter to continue')
         return
+
+def massMessage(page,message):
+    import random
+    
+    massLogin()
+    
+    if len(cookieArray) == 0:
+        print 'First you must create accounts: option 1) '
+        return
+    
+    for i in range(len(cookieArray)):
+        try:
+            cj._cookies = cookieArray[i]
+            c_user = getC_user()
+            print str(c_user)+'\n'
+            pageID = getUserID(page)
+            numero = ''
+            numero2 = ''
+            for i in range(10):
+                numero += str(random.randrange(0,10))
+            for i in range(10):
+                numero2 += str(random.randrange(0,10))
+                set_dtsg()
+                dtsg = br.form['fb_dtsg']
+                arguments = {
+                    'message_batch[0][action_type]' : 'ma-type:user-generated-message',
+                    'message_batch[0][author]' : 'fbid:'+c_user,
+                    'message_batch[0][timestamp]' : '1401416840784',
+                    'message_batch[0][timestamp_absolute]' : 'Today',
+                    'message_batch[0][timestamp_relative]' : '11:27pm',
+                    'message_batch[0][timestamp_time_passed]' : '0',
+                    'message_batch[0][is_unread]' : 'false',
+                    'message_batch[0][is_cleared]' : 'false',
+                    'message_batch[0][is_forward]' : 'false',
+                    'message_batch[0][is_filtered_content]' : 'false',
+                    'message_batch[0][is_spoof_warning]' : 'false',
+                    'message_batch[0][source]' : 'source:titan:web',
+                    'message_batch[0][body]' : message,
+                    'message_batch[0][has_attachment]' : 'false',
+                    'message_batch[0][html_body]' : 'false',
+                    'message_batch[0][specific_to_list][0]' : 'fbid:'+pageID,
+                    'message_batch[0][specific_to_list][1]' : 'fbid:'+c_user,
+                    'message_batch[0][force_sms]' : 'true',
+                    'message_batch[0][ui_push_phase]' : 'V3',
+                    'message_batch[0][status]' : '0',
+                    'message_batch[0][message_id]' : '<1401416840784:'+numero+'-'+numero2+'@mail.projektitan.com>',
+                    '''<1401416840784:554304545-874733751@mail.projektitan.com>','''
+                    'message_batch[0][client_thread_id]' : 'user:'+pageID,
+                    'client' : 'mercury',
+                    '__user' : c_user,
+                    '__a' : '1',
+                    '__dyn' : '7n8ajEAMCBynUKt2u6aOGeExEW9ACxO4pbGA8AGGBy6C-Cu6popDFp4qu',
+                    '__req' : 'q',
+                    'fb_dtsg' : dtsg,
+                    'ttstamp' : '26581697273111715585898748',
+                    '__rev' : '1268876'
+                    }
+                
+                datos = urlencode(arguments)
+                response = br.open('https://www.facebook.com/ajax/mercury/send_messages.php',datos)
+        
+                if globalLogging:
+                        logs(response.read())
+        
+        except mechanize.HTTPError as e:
+            print e.code
+        except mechanize.URLError as e:
+                print e.reason.args  
+                    
+        except:
+            logs('Error en el modulo de massMessage()')
+            print 'Error en el modulo de massMessage()\n'
+
+
+def logTestUser(testUser):
+    try:
+        set_dtsg()
+        dtsg = br.form['fb_dtsg']
+        c_user = getC_user()
+        arguments = {
+            'user_id' : testUser,
+            '__user' : c_user,
+            '__a' : '1',
+            '__dyn' : '7w86i3S2e4oK4pomXWo4CE-',
+            '__req' : '2',
+            'ttstamp' : '2658172826512290796710073107',
+            '__rev' : '1270592',
+            'fb_dtsg' : dtsg,
+            }
+        datos = urlencode(arguments)
+        response = br.open('https://developers.facebook.com/checkpoint/async/test-user-login/dialog/',datos)
+        
+        dump = json.loads(response.read().strip("for (;;);"))
+        line = dump['jsmods']['markup'][0][1]['__html']
+        match= re.search('\"n\"',line)
+        if match != None:
+            matchBis = re.search('value=\"',line[match.end():])
+            matchBisBis = re.search('"',line[match.end()+matchBis.end():])
+            code = line[match.end()+matchBis.end():match.end()+matchBis.end()+matchBisBis.start()]
+
+        set_dtsg()
+
+        arguments['fb_dtsg'] = br.form['fb_dtsg']
+        arguments['n'] = str(code)
+        
+        datos = urlencode(arguments)
+        response = br.open('https://developers.facebook.com/checkpoint/async/test-user-login/',datos)
+
+        if globalLogging:
+                logs(response.read())
+    
+    except mechanize.HTTPError as e:
+        print e.code
+    except mechanize.URLError as e:
+            print e.reason.args  
+
+def massLoginTest():
+    import copy
+    i = int(0)
+    people = database.getUsersNotLogged()
+    #Flush
+    print '\r                                                        \r',
+    
+    masterCj = copy.deepcopy(cj._cookies)
+    loadPersistentCookie()
+
+    for person in people:
+        #login
+        try:
+            cj._cookies = copy.deepcopy(masterCj)
+            if person[4] == 0:
+                logTestUser(str(person[0]))
+                cookieArray.append(cj._cookies)
+                print cj._cookies #DEBUG
+                cj.clear()
+                    
+            #percentage
+            i+=1
+            percentage = (i * 100.0) / len(people)
+            print '\rCompleted [%.2f%%]\r'%percentage,
+        except:
+            print 'Error with user %s' %person[0]
+            continue
+    
+    cj.clear()
+    savePersistentCookie()   
+    
