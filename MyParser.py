@@ -34,8 +34,8 @@ def parceros(json_dump):
         return 1
     else:
         return -1    
-
-
+    
+  
 def parseData(dataRaw):
     parser = MyHTMLParser()
     parser.array()

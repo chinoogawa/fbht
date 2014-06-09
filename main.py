@@ -9,7 +9,6 @@ import signal
 from handlers import *
 from sys import stdin
 
-
 globalLogin = False
 globalEmail = ''
 globalPassword = ''
@@ -63,7 +62,7 @@ def main():
                (int(option) != 19) and (int(option) != 20) and
                (int(option) != 21) and (int(option) != 22) and 
                (int(option) != 23) and (int(option) != 24) and
-               (int(option) != 25)):
+               (int(option) != 25) and (int(option) != 26)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -89,8 +88,9 @@ def main():
             print '21) Send friend request to disclosed friend list from your account\n'
             print '22) Bypass friendship (only .dot without graph integration)\n'
             print '23) Note DDoS attack\n'
-            print '24) Developer Test Account\n'
-            print '25) Close the application\n'
+            print '24) Old Like Flood (Not working)\n'
+            print '25) NEW! SPAM any fanpage inbox\n'
+            print '26) Close the application\n'
 
             
             choice = raw_input('Insert your choice: ')
@@ -108,20 +108,16 @@ def main():
             else:
                 email = globalEmail
                 password = globalPassword
-
+            
+            appID = raw_input('Enter Application ID: ')
+            
             if (login(email,password,'real'))!= -1:
-                while True:
-                    number = raw_input('Insert the amount of accounts for creation (Must be less of 10): ')
-                    if int(number) <= 10:
-                        break
-                sTime = time()
-                                
-                if (createUser(number) == -1):
-                    raw_input('Apparently your test account list is full, try deleting first')
-                else:
-                    print '\n'
-                    raw_input('Execution time : %d' %(time() - sTime) + '\nPress Enter to continue: ')
-    
+                number = raw_input('Insert the amount of accounts for creation (4 min): ')
+                for i in range(int(number)/4):
+                    sTime = time()
+                    devTest(appID)
+                    getTest(appID)
+               
     
         if(int(option) == 2):
             if (globalLogin == False):
@@ -151,9 +147,16 @@ def main():
             raw_input('Execution time : %d' %(time() - sTime) + '\nPress Enter to continue:')
             
         if(int(option) == 5):
-            sTime = time()
-            massLogin()
-            raw_input('Execution time : %d' %(time() - sTime) + '\nPress Enter to continue:')
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+                
+            if (login(email,password,'real'))!= -1:
+                sTime = time()
+                massLoginTest()
+                raw_input('Execution time : %d' %(time() - sTime) + '\nPress Enter to continue:')
 
         if (int(option) == 6):
             
@@ -276,16 +279,15 @@ def main():
                         postId.append(response)
                     else:
                         break
-                
-                quantity = raw_input('Insert the amount of likes: ')
-                like(postId, quantity)
+                        
+                likeDev(postId)
             except EOFError:
                 print 'EOFError'
                 stdin.flush()
                 pass
             except signalCaught as e:
                 print ' %s' %e.args[0]  
-                raw_input('Press enter to continue..')
+
                     
         
         if (int(option) == 12):
@@ -449,52 +451,39 @@ def main():
                     noteDDoS(imageURL,noteID, privacy[option])
         
 
+                    
         if (int(option) == 24):
             signal.signal(signal.SIGINT, signal_handler)
-            if (globalLogin == False):
-                email,password = setMail()
-            else:
-                email = globalEmail
-                password = globalPassword
-
-            if (login(email,password,'real'))!= -1:
-                signal.signal(signal.SIGINT, signal_handler)
-                try:
-                    counter = 0
-                    postId = []
-                    
-                    print 'Insert the Post ID\'s (Must be from a page). If no more posts for adding,insert \'0\' :'
-                    while True:
-                        response = raw_input('post[%d]:'%counter)
-                        if ( response is not '0' ):
-                            counter+=1
-                            postId.append(response)
-                        else:
-                            break
-                    resp = raw_input('Create new dev accounts? 1|0 : ')
-                    appID = raw_input('Enter Application ID: ')
-                    if resp == str(1):
-                        quantity = raw_input('Insert the amount of accounts: ')
-                        for i in range(int(quantity)/4):
-                            devTest(appID)
-                            
-                        getTest(appID)
-                        changePassword(appID)
-                            
-                  
-                    '''quantity = raw_input('Insert the amount of likes: ')'''
-                    quantity = 1
-                    likeDev(postId,quantity,appID)
-                except EOFError:
-                    print 'EOFError'
-                    stdin.flush()
-                    pass
-                except signalCaught as e:
-                    print ' %s' %e.args[0]  
+            try:
+                counter = 0
+                postId = []
+                
+                print 'Insert the Post ID\'s (Must be from a page). If no more posts for adding,insert \'0\' :'
+                while True:
+                    response = raw_input('post[%d]:'%counter)
+                    if ( response is not '0' ):
+                        counter+=1
+                        postId.append(response)
+                    else:
+                        break
+                
+                quantity = raw_input('Insert the amount of likes: ')
+                like(postId, quantity)
+            except EOFError:
+                print 'EOFError'
+                stdin.flush()
+                pass
+            except signalCaught as e:
+                print ' %s' %e.args[0]  
+                raw_input('Press enter to continue..')
+                
    
-
-                    
         if (int(option) == 25):
+            page = raw_input('Insert the fan page name or id: ')
+            message = raw_input('Insert the message to send: ')
+            massMessage(page, message)
+                        
+        if (int(option) == 26):
             connect.close()
 
             
