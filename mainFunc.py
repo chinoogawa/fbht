@@ -2277,3 +2277,289 @@ def getTest(appID):
         logs('Error in getTest module')
         print '\rError in getTest module\r'
         raise 
+'''
+def getTest(appID):
+    try:
+        start = 0
+        flag = 0
+        while flag != -1:
+            
+            set_dtsg()
+            dtsg = br.form['fb_dtsg']
+            arguments = {   
+                'start' : str(start),
+                '__user' : getC_user(),
+                '__a' : '1',
+                '__dyn' : '7w86i1PyUnxqnFwn8',
+                '__req' : '4',
+                'fb_dtsg' : dtsg,
+                'ttstamp' : '26581707111311350113871144898',
+                '__rev' : '1262242'
+            }
+            datos = urlencode(arguments)
+            try:
+                response = br.open('https://developers.facebook.com/apps/'+appID+'/roles/test-users/paging/',datos)
+                aParsear = response.read().strip("for (;;);")
+                json_dump = json.loads(aParsear)
+                flag = MyParser.parceros(json_dump)
+                start+=20
+            except:
+                break
+    except:
+        print 'general error'
+
+def changePassword(appID):        
+    people = database.getUsers()
+    peopleLogged = database.getUsersNotLogged()
+    for persona in people:
+        if persona in peopleLogged:
+            try:
+                set_dtsg()
+                dtsg = br.form['fb_dtsg']
+                arguments = { 
+                    'fb_dtsg' : dtsg,  
+                    'name' : str(persona[1]),
+                    'password' : '1234567890',
+                    'confirm_password' : '1234567890',
+                    '__user' : getC_user(),
+                    '__a' : '1',
+                    '__dyn' : '7w86i1PyUnxqnFwn8',
+                    '__req' : 'a',
+                    'ttstamp' : '26581698582558910610211811276',
+                    '__rev' : '1262776'
+                }
+                datos = urlencode(arguments)
+                try:
+                    response = br.open('https://developers.facebook.com/apps/async/test-users/edit/?app_id='+appID+'&test_user_id='+str(persona[0]),datos)
+                except:
+                    print 'error'
+            except:
+                print 'Error General'
+        
+        
+        
+def likeDev(postId):
+        
+    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        #Cookie of the real account
+        masterCookie = cj._cookies
+        massLogin()
+        
+        if len(cookieArray) == 0:
+            print 'First you must create accounts: option 1) '
+        
+        quantity = raw_input('Insert the amount of likes: ')
+        
+        while int(quantity) <= 0 or int(quantity) >= len(cookieArray):
+            print 'Wrong quantity. First you must create enough accounts for that amount of likes .. (option 1) ..'
+            quantity = raw_input('Insert the amount of likes: ')
+            
+
+        #Percentage container
+        percentage = 0.0
+        j = 0.0
+        total = int(quantity) * len(postId)
+        #flush
+        print '\r                                                        \r',
+        
+        for i in range(int(quantity)):
+            for post in range(len(postId)):
+                cj._cookies = cookieArray[i]
+                c_user = getC_user()
+                try:
+                    set_dtsg()
+                    
+                    arguments = {
+                        'like_action' : 'true',
+                        'ft_ent_identifier' : str(postId[post]),
+                        'source' : '0',
+                        'client_id' : str(c_user)+'%3A4047576437',
+                        'rootid' : 'u_0_2o',
+                        'giftoccasion' : '',
+                        'ft[tn]' : '%3E%3D',
+                        'ft[type]' : '20',
+                        'nctr[_mod]' : 'pagelet_timeline_recent',
+                        '__user' : c_user,
+                        '__a' : '1',
+                        '__dyn' : '7n8ahyj35ym3KiA',
+                        '__req' : 'c',
+                        'fb_dtsg' : br.form['fb_dtsg'],
+                        'phstamp' : '165816595797611370260',
+                    }
+                    
+                                
+                    datos = urlencode(arguments)
+                    response = br.open('https://www.facebook.com/ajax/ufi/like.php',datos)
+                    
+                    if globalLogging:
+                        logs(response.read())
+                    
+                    percentage = (j * 100.0)/total
+                    print '\r[%.2f%%] of likes completed\r' %(percentage), 
+                    j+=1
+                        
+                except mechanize.HTTPError as e:
+                    print e.code
+                    
+                except mechanize.URLError as e:
+                        print e.reason.args  
+                except:
+                    print 'Unknown error' 
+            
+        cj._cookies = masterCookie           
+        raw_input('Finished like() module, press enter to continue')
+    except signalCaught as e:
+        deleteUser()
+        message = '%s catch from create module' %e.args[0]
+        logs(str(message))
+        print '%s \n' %message
+        raw_input('Press enter to continue')
+        return
+
+def massMessage(page,message):
+    import random
+    
+    massLogin()
+    
+    if len(cookieArray) == 0:
+        print 'First you must create accounts: option 1) '
+        return
+    
+    for i in range(len(cookieArray)):
+        try:
+            cj._cookies = cookieArray[i]
+            c_user = getC_user()
+            print str(c_user)+'\n'
+            pageID = getUserID(page)
+            numero = ''
+            numero2 = ''
+            for i in range(10):
+                numero += str(random.randrange(0,10))
+            for i in range(10):
+                numero2 += str(random.randrange(0,10))
+                set_dtsg()
+                dtsg = br.form['fb_dtsg']
+                arguments = {
+                    'message_batch[0][action_type]' : 'ma-type:user-generated-message',
+                    'message_batch[0][author]' : 'fbid:'+c_user,
+                    'message_batch[0][timestamp]' : '1401416840784',
+                    'message_batch[0][timestamp_absolute]' : 'Today',
+                    'message_batch[0][timestamp_relative]' : '11:27pm',
+                    'message_batch[0][timestamp_time_passed]' : '0',
+                    'message_batch[0][is_unread]' : 'false',
+                    'message_batch[0][is_cleared]' : 'false',
+                    'message_batch[0][is_forward]' : 'false',
+                    'message_batch[0][is_filtered_content]' : 'false',
+                    'message_batch[0][is_spoof_warning]' : 'false',
+                    'message_batch[0][source]' : 'source:titan:web',
+                    'message_batch[0][body]' : message,
+                    'message_batch[0][has_attachment]' : 'false',
+                    'message_batch[0][html_body]' : 'false',
+                    'message_batch[0][specific_to_list][0]' : 'fbid:'+pageID,
+                    'message_batch[0][specific_to_list][1]' : 'fbid:'+c_user,
+                    'message_batch[0][force_sms]' : 'true',
+                    'message_batch[0][ui_push_phase]' : 'V3',
+                    'message_batch[0][status]' : '0',
+                    'message_batch[0][message_id]' : '<1401416840784:'+numero+'-'+numero2+'@mail.projektitan.com>',
+                    '''<1401416840784:554304545-874733751@mail.projektitan.com>','''
+                    'message_batch[0][client_thread_id]' : 'user:'+pageID,
+                    'client' : 'mercury',
+                    '__user' : c_user,
+                    '__a' : '1',
+                    '__dyn' : '7n8ajEAMCBynUKt2u6aOGeExEW9ACxO4pbGA8AGGBy6C-Cu6popDFp4qu',
+                    '__req' : 'q',
+                    'fb_dtsg' : dtsg,
+                    'ttstamp' : '26581697273111715585898748',
+                    '__rev' : '1268876'
+                    }
+                
+                datos = urlencode(arguments)
+                response = br.open('https://www.facebook.com/ajax/mercury/send_messages.php',datos)
+        
+                if globalLogging:
+                        logs(response.read())
+        
+        except mechanize.HTTPError as e:
+            print e.code
+        except mechanize.URLError as e:
+                print e.reason.args  
+                    
+        except:
+            logs('Error en el modulo de massMessage()')
+            print 'Error en el modulo de massMessage()\n'
+
+
+def logTestUser(testUser):
+    try:
+        set_dtsg()
+        dtsg = br.form['fb_dtsg']
+        c_user = getC_user()
+        arguments = {
+            'user_id' : testUser,
+            '__user' : c_user,
+            '__a' : '1',
+            '__dyn' : '7w86i3S2e4oK4pomXWo4CE-',
+            '__req' : '2',
+            'ttstamp' : '2658172826512290796710073107',
+            '__rev' : '1270592',
+            'fb_dtsg' : dtsg,
+            }
+        datos = urlencode(arguments)
+        response = br.open('https://developers.facebook.com/checkpoint/async/test-user-login/dialog/',datos)
+        
+        dump = json.loads(response.read().strip("for (;;);"))
+        line = dump['jsmods']['markup'][0][1]['__html']
+        match= re.search('\"n\"',line)
+        if match != None:
+            matchBis = re.search('value=\"',line[match.end():])
+            matchBisBis = re.search('"',line[match.end()+matchBis.end():])
+            code = line[match.end()+matchBis.end():match.end()+matchBis.end()+matchBisBis.start()]
+
+        set_dtsg()
+
+        arguments['fb_dtsg'] = br.form['fb_dtsg']
+        arguments['n'] = str(code)
+        
+        datos = urlencode(arguments)
+        response = br.open('https://developers.facebook.com/checkpoint/async/test-user-login/',datos)
+
+        if globalLogging:
+                logs(response.read())
+    
+    except mechanize.HTTPError as e:
+        print e.code
+    except mechanize.URLError as e:
+            print e.reason.args  
+
+def massLoginTest():
+    import copy
+    i = int(0)
+    people = database.getUsersNotLogged()
+    #Flush
+    print '\r                                                        \r',
+    
+    masterCj = copy.deepcopy(cj._cookies)
+    loadPersistentCookie()
+
+    for person in people:
+        #login
+        try:
+            cj._cookies = copy.deepcopy(masterCj)
+            if person[4] == 0:
+                logTestUser(str(person[0]))
+                cookieArray.append(cj._cookies)
+                print cj._cookies #DEBUG
+                cj.clear()
+                    
+            #percentage
+            i+=1
+            percentage = (i * 100.0) / len(people)
+            print '\rCompleted [%.2f%%]\r'%percentage,
+        except:
+            print 'Error with user %s' %person[0]
+            continue
+    
+    cj.clear()
+    savePersistentCookie()   
+    
