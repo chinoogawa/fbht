@@ -1810,7 +1810,7 @@ def simpleGraph(friends, victim):
     nx.draw_spring(myGraph,node_color = np.linspace(0,1,len(myGraph.nodes())),edge_color = np.linspace(0,1,len(myGraph.edges())) ,with_labels=True)
     plt.savefig( os.path.join(root,directory,victim+"graph_color.pdf") )
     plt.savefig( os.path.join(root,directory,victim+"graph_color.png") )
-    write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.png"))  
+    write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.dot"))  
     plt.show()
     
 def friendshipPlot(text,victim):
@@ -2177,27 +2177,28 @@ def noteDDoS(imageURL,noteID, privacy):
         raise
     
 def devTest(appID):
-    set_dtsg()
-    dtsg = br.form['fb_dtsg']
-    br.open('https://developers.facebook.com/').read()
-    arguments = {   
-        'fb_dtsg' : dtsg,
-        'count' : '4',
-        'app_id' : str(appID),
-        'install_app' : '1',
-        'platform_version' : 'v2.0',
-        'enable_ticker' : '1',
-        'language' : 'en_US',
-        '__user' : getC_user(), 
-        '__a' : '1',
-        '__dyn' : '7w86i1PyUnxqnFwn8',
-        '__req' : '3',
-        'ttstamp' : '2658172110116109767311810511273',
-        '__rev' : '1262242'
-        }
-    
-    datos = urlencode(arguments)
     try:
+        set_dtsg()
+        dtsg = br.form['fb_dtsg']
+        br.open('https://developers.facebook.com/').read()
+        arguments = {   
+            'fb_dtsg' : dtsg,
+            'count' : '4',
+            'app_id' : str(appID),
+            'install_app' : '1',
+            'platform_version' : 'v2.0',
+            'enable_ticker' : '1',
+            'language' : 'en_US',
+            '__user' : getC_user(), 
+            '__a' : '1',
+            '__dyn' : '7w86i1PyUnxqnFwn8',
+            '__req' : '3',
+            'ttstamp' : '2658172110116109767311810511273',
+            '__rev' : '1262242'
+            }
+        
+        datos = urlencode(arguments)
+        
         response = br.open('https://developers.facebook.com/apps/async/test-users/create/',datos)
     except mechanize.HTTPError as e:
         logs(e.code)

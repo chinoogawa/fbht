@@ -1,13 +1,10 @@
-
-
-
-import os
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest
 from database import connect,status
 from time import time
 import signal
 from handlers import *
 from sys import stdin
+import os
 
 globalLogin = False
 globalEmail = ''
@@ -75,7 +72,7 @@ def main():
             print '8)  Youtube hijack\n'
             print '9)  Private message, Link Preview hack (Simple web version)\n'
             print '10) Private message, Link Preview hack (Youtube version)\n'
-            print '11) Like flood\n'
+            print '11) NEW Like flood\n'
             print '12) Publish a post as an App (App Message Spoof)\n'
             print '13) Bypass friendship privacy\n'
             print '14) Bypass friendship privacy with graph support\n'
