@@ -4,6 +4,7 @@ from time import time
 import signal
 from handlers import *
 from sys import stdin
+import os
 
 globalLogin = False
 globalEmail = ''
@@ -267,7 +268,7 @@ def main():
                 counter = 0
                 postId = []
                 
-                print 'Insert the Post ID\'s (Must be from a page). If no more posts for adding,insert \'0\' :'
+                print "Insert the Post ID's (Must be from a page). If no more posts for adding,insert '0' :"
                 while True:
                     response = raw_input('post[%d]:'%counter)
                     if ( response is not '0' ):
@@ -283,6 +284,7 @@ def main():
                 pass
             except signalCaught as e:
                 print ' %s' %e.args[0]  
+
                     
         
         if (int(option) == 12):
@@ -316,7 +318,8 @@ def main():
             if (login(email,password,'real'))!= -1:
                 victim = raw_input('Insert the victim username or userId: ')
                 transitive = raw_input('Insert the transitive username or userId: ')
-                print 'The information will be stored in dumps\\%s.txt \n' %victim
+                
+                print "The information will be stored in %s. \n" % os.path.join("dumps",victim+".txt")
                 bypassFriendshipPrivacy(victim, transitive)
         
         if (int(option) == 14):
@@ -333,7 +336,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     bypassFriendshipPrivacyPlot(victim, transitive)
                 else:
                     friendList, friendsName = friendshipPlot(check,victim)
@@ -420,7 +423,7 @@ def main():
                 check = checkPrivacy(victim)
                 if (check == -1):
                     transitive = raw_input('Insert the transitive username or userId: ')
-                    print 'The information will be stored in dumps\\%s\\%s.txt \n' %(victim,victim)
+                    print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     dotFile(victim, transitive)
                 else:
                     print 'Friends publicly available ;D'
@@ -443,7 +446,9 @@ def main():
                 option = raw_input("Insert option for privacy 0:Public 1:Friends 2:Only Me : ")
                 if option in privacySet:
                     noteDDoS(imageURL,noteID, privacy[option])
+        
 
+                    
         if (int(option) == 24):
             signal.signal(signal.SIGINT, signal_handler)
             try:
