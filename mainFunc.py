@@ -2006,7 +2006,7 @@ def dotFile(victim, transitive):
     visited = []  
     try:
         #If the file already exists 
-        friendshipFile = open( os.path.jion(root,directory,victim+".txt") ,"rb")
+        friendshipFile = open( os.path.join(root,directory,victim+".txt") ,"rb")
         #Reads every line of the file
         while True:
             linea = friendshipFile.readline()
@@ -2344,7 +2344,7 @@ def likeDev(postId):
     try:
         #Cookie of the real account
         masterCookie = cj._cookies
-        massLogin()
+        massLoginTest()
         
         if len(cookieArray) == 0:
             print 'First you must create accounts: option 1) '
@@ -2420,7 +2420,7 @@ def likeDev(postId):
 def massMessage(page,message):
     import random
     
-    massLogin()
+    massLoginTest()
     
     if len(cookieArray) == 0:
         print 'First you must create accounts: option 1) '
