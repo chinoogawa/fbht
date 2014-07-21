@@ -113,7 +113,7 @@ def main():
                 for i in range(int(number)/4):
                     sTime = time()
                     devTest(appID)
-                    getTest(appID)
+                getTest(appID)
                
     
         if(int(option) == 2):
