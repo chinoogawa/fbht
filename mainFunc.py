@@ -2562,4 +2562,159 @@ def massLoginTest():
     
     cj.clear()
     savePersistentCookie()   
+
+def plotDOT(victim):
+    root = 'dumps'
+    directory = victim
+    mkdir(directory,root)
     
+    graph = open(root+"\\"+directory+"\\"+victim+"_graph.dot","wb")
+    
+    graph.write("Graph    {\n")
+    
+    victim = victim.replace(".","_")
+    nodes = database.getNodes(victim)
+    for node in nodes:
+        
+        graph.write("    "+victim.replace("_",".")+" -> "+node[0]+";\n")
+        
+        edges = database.getEdges(victim,node[0],node[1])
+        try:
+            edgeList = edges[0][2].split(';')
+            writed = []
+            for individual in edgeList:
+                if individual != "" and individual not in writed:
+                    graph.write("    "+node[0]+" -> "+str(individual)+";\n")
+                    writed.append(individual)
+        except:
+            print 'No edges for %s' %node[0]
+            
+    graph.write("}")
+    graph.close()
+    
+def dotFileDatabase(victim, transitive):
+
+    #Percentage container
+    percentage = 0.0
+    #Disclosude friends container
+    friendships = []
+    #Already visited nodes container
+    visited = []      
+    
+    try:
+        #Generates the first level of the search
+        result = coreFriendshipPrivacy(victim,transitive)
+    except:
+        print 'Check the internet connection please..'
+        return
+    
+    #Stores non repetitive values in the disclosed friends container
+    transitivo = getName(transitive)
+    transitivoID = getUserID(transitive)
+    
+    if transitivoID == -1:
+        transitivoID = transitivo
+    
+    database.addNode(victim,transitivo, transitivoID)
+        
+    for individuos in result:
+        friendName = getName(individuos)
+        friendId = getUserID(individuos)
+        
+        if friendId == -1:
+            friendId = friendName
+               
+        database.addNode(victim,friendName, friendId)
+        database.addEdge(victim,transitivo, transitivoID, friendName, friendId)
+        friendships.append(individuos)
+
+    
+    #Counter for percentage calculus purpose 
+    i = 0.0
+    #flush
+    print '\r                                                        \r',
+    #For every value in the first disclosed list, repeats until every value has been tryed    
+    for friends in friendships:
+        #Percentage calculus 
+        percentage = (i * 100.0)/len(friendships)
+        
+        print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(friendships), percentage), 
+        i+=1
+        #Only if the node wasn't visited 
+        if friends not in visited:
+            #if coreFriendshipPrivacy() fails, an exception is caught. Therefore, state wis still being True. 
+            #Only if the try passes, the infinite while will end. (For internet error connection problem)
+            state = True
+            while state == True:
+                try:
+                    result = coreFriendshipPrivacy(victim,friends)
+                    state = False
+                except signalCaught as e:
+                    state = False
+                    print 'Signal Caught handler'
+                    print '%s ' %e.args[0]
+                    return
+                except:
+                    logs('Check the internet connection please.. Press enter when it\'s done')
+                    print '\r                                                                       \r',
+                    a = raw_input('\rCheck the internet connection please.. Press enter when it\'s done\r')
+                    if a == 1:
+                        state = False
+                    else:
+                        if a == 2:
+                            email,password = setMail()
+                            login(email,password,'real')
+            
+            #Stores non repetitive values in the disclosed friends container
+            friendName = getName(friends)
+            friendId = getUserID(friends)
+        
+            if friendId == -1:
+                friendId = friendName 
+            
+            database.addNode(victim,friendName, friendId)
+                
+            for element in result:
+                if element not in friendships:
+                    
+                    friendTran = getName(element)
+                    friendTranId = getUserID(element)
+                
+                    if friendId == -1:
+                        friendId = friendName 
+                        
+                    database.addNode(victim,friendTran, friendTranId)
+                    database.addEdge(victim,friendName, friendId, friendTran, friendTranId)
+                    friendships.append(element)
+            #Stores every single value of friendships list alredy analyzed for non repetitivness
+            visited.append(friends)
+        
+def simpleDotGraphDatabase(friends, victim):
+
+    
+    for friend in friends:
+       
+        try:
+            mutual = coreFriendshipPrivacy(victim, friend)
+        except:
+            continue
+        
+              
+        transitive = getName(friend)
+        transitiveID = getUserID(friend)
+        
+        if transitiveID == -1:
+            transitiveID = transitive
+        
+        database.addNode(victim,transitive, transitiveID)
+        
+        for element in mutual:
+
+            mutualFriend = getName(element)
+            mutualFriendID = getUserID(element)
+            
+            if mutualFriendID == -1:
+                mutualFriendID = mutualFriend
+            
+            database.addNode(victim,mutualFriend, mutualFriendID)
+            database.addEdge(victim,transitive, transitiveID, mutualFriend, mutualFriendID)

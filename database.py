@@ -74,3 +74,77 @@ def getUsersNotLogged():
     cursor.execute("SELECT * FROM testUsers WHERE logged=0;")
     rows = cursor.fetchall()
     return rows
+
+def createVictimTable(victim):
+    try:
+        victim = victim.replace(".","_")
+        cursor.execute("CREATE TABLE "+str(victim)+"_nodes(friendName text, friendId text)")
+        cursor.execute("CREATE TABLE "+str(victim)+"_friends_edges(friendName text, friendId text, edges text, edgesIDS text)")
+    except:
+        print 'Error al crear la tabla'
+        return -1
+    connect.commit()
+
+def addNode(victim,friendName, friendId):
+
+    try:
+        victim = victim.replace(".","_")
+        if (checkNodeExistence(victim, friendName, friendId) == False):
+            cursor.execute("INSERT INTO "+str(victim)+"_nodes (friendName, friendId) VALUES(?, ?)", (friendName, friendId))
+            cursor.execute("INSERT INTO "+str(victim)+"_friends_edges (friendName, friendId) VALUES(?, ?)", (friendName, friendId))
+    except:
+        print 'Error al ingresar el nodo %s' %friendName
+             
+    connect.commit()
+
+def addEdge(victim,friendName, friendId, edge, edgeID):
+    if checkNodeExistence(victim,friendName, friendId) == True:
+        try:
+            victim = victim.replace(".","_")
+            cursor.execute("SELECT edges FROM "+str(victim)+"_friends_edges WHERE friendName=\""+str(friendName)+"\" OR friendId=\""+str(friendId)+"\";")
+            rows = str(cursor.fetchone()).strip("(None,)").strip("'")
+            rows = rows.encode('ascii','replace') + edge + ";"
+            cursor.execute("UPDATE "+str(victim)+"_friends_edges SET edges=\""+rows+"\" WHERE friendName=\""+str(friendName)+"\" OR friendId=\""+str(friendId)+"\";")
+            cursor.execute("SELECT edgesIDS FROM "+str(victim)+"_friends_edges WHERE friendName=\""+str(friendName)+"\" OR friendId=\""+str(friendId)+"\";")
+            rows = str(cursor.fetchone()).strip("(None,)").strip("'")
+            rows = rows.encode('ascii','replace') + edgeID + ";"
+            cursor.execute("UPDATE "+str(victim)+"_friends_edges SET edgesIDS=\""+rows+"\" WHERE friendName=\""+str(friendName)+"\" OR friendId=\""+str(friendId)+"\";")
+        
+        except db.Error as e:
+            print "An error occurred:", e.args[0]
+        
+        except:
+            print 'Error al hacer update para el nodo %s' %edge
+                 
+        connect.commit()
+    else:
+        return -1
+
+def getNodes(victim):
+    victim = victim.replace(".","_")
+    cursor.execute("SELECT * FROM "+str(victim)+"_nodes;")
+    rows = cursor.fetchall()
+    return rows
+
+def getEdges(victim, friendName, friendId):
+    victim = victim.replace(".","_")
+    cursor.execute("SELECT * FROM "+str(victim)+"_friends_edges WHERE friendName=\""+str(friendName)+"\" OR friendId=\""+str(friendId)+"\";")
+    rows = cursor.fetchall()
+    return rows    
+    
+def checkNodeExistence(victim, friendName, friendId):
+    victim = victim.replace(".","_")
+    cursor.execute("SELECT * FROM "+str(victim)+"_nodes WHERE friendName=\""+str(friendName)+"\" OR friendId=\""+str(friendId)+"\";")
+    rows = cursor.fetchall()
+    if rows != []:
+        return True
+    else:
+        return False
+
+def checkTableExistence(victim):
+    try:
+        cursor.execute("SELECT count(*) FROM "+victim.replace(".","_")+"_nodes;")
+        res = cursor.fetchone()
+        return bool(res[0])
+    except:
+        return False
