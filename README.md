@@ -15,6 +15,8 @@ IMPORTS:
   Mechanize-0.2.5
   Other: gephi-0.8.2-beta (Graphs software)
   
+  You can also use "pip install -r dependecias.txt"
+  
 Recomendation:
   Use setuptools for the dependencies
 
