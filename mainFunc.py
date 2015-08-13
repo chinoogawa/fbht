@@ -18,6 +18,8 @@ from networkx.drawing.nx_agraph import write_dot
 from base64 import b64encode
 import logging
 from mechanize import Request
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 blocked = 0
 masterCj = ''
@@ -41,42 +43,21 @@ def login(email, password,state):
     # Empty the cookies
     cj.clear()
     # Access the login page to get the forms
-    try:
-        br.open('https://login.facebook.com/login.php')
-    except mechanize.HTTPError as e:
-        logs(str(e.code) + ' on login module')
-        print str(e.code) + ' on login module'
-        return -1
-    except mechanize.URLError as e:
-        logs(str(e.reason.args) + ' on login module')
-        print str(e.reason.args) + ' on login module'
-        return -1
-    except:
-        logs("Can't Access the login.php form")
-        print "\rCan't Access the login.php form\r"
-        return -1
+    driver = webdriver.Firefox()
+    driver.get("https://www.facebook.com/")
+    assert "Facebook" in driver.title
+    elem = driver.find_element_by_name("email")
+    elem.send_keys(email)
+    elem = driver.find_element_by_name("pass")
+    elem.send_keys(password)  
+    elem.send_keys(Keys.RETURN)
+    all_cookies = driver.get_cookies()
+    assert "No results found." not in driver.page_source
+    driver.close()
         
-    # Select the first form
-    br.select_form(nr=0)
-        
-    # Set email and pass to the form
-    try:
-        br.form['email'] = email
-        br.form['pass'] = password
-    except:
-        logs("Something bad happen.. Couldn't set email and password")
-        print "\rSomething bad happen.. Couldn't set email and password\r"
-        return -1
-    
-    # Send the form
-    try:
-        response = br.submit()
-        if globalLogging:
-            logs(response.read())
-    except:
-        logs('Fatal error while submitting the login form')
-        print '\rFatal error while submitting the login form\r'
-        return -1
+    for s_cookie in all_cookies:
+        cj.set_cookie(cookielib.Cookie(version = 0, name = s_cookie['name'], value = s_cookie['value'], port = '80', port_specified = False, domain = s_cookie['domain'], domain_specified = True, domain_initial_dot = False, path = s_cookie['path'], path_specified = True, secure = s_cookie['secure'], expires = s_cookie['expiry'], discard = False, comment = None, comment_url = None, rest = None, rfc2109 = False))
+
     try:
         if cookieHandler.isLogged(cj) == True:
             #Checkpoint exists (?) 
