@@ -1268,28 +1268,24 @@ def linkFriends(victim):
     linkedFile.close()
     
 def getName(userId):
-    delay = 0
-    while delay < 60:
-        try:
-            response = br.open('https://graph.facebook.com/'+str(userId))
-            resultado = response.read()
-            json_dump = json.loads(resultado)
-            try:
-                return str(json_dump['username'])
-            except:
-                return str(userId)
-        
-        except mechanize.HTTPError as e:
-                print str(e.code) + 'Increasing delay %d' %delay
-                delay += 30 
-                sleep(delay)
-        except mechanize.URLError as e:
-                print str(e.reason.args)  + 'Increasing delay %d' %delay
-                delay += 30
-                sleep(delay)
-                
-    #In case the while ends
-    return str(userId)
+    try:
+        response = br.open('https://www.facebook.com/'+str(userId))
+        data = response.read()
+        match = re.search("_8_2",data)
+        if match is not None:
+            start = match.end() + 33
+            matchBis = re.search('">',data[start:])
+            if matchBis is not None:
+                return data[start:start+matchBis.start()]
+        return userId
+    except mechanize.HTTPError as e:
+        print str(e.code)
+        return userId
+    except mechanize.URLError as e:
+        print str(e.reason.args)
+        return userId
+    except:
+        return userId
 
 
 def mkdir(directory,root):
@@ -1899,6 +1895,7 @@ def friendshipPlot(text,victim):
     friendsID = []
     counter = 0
     lastId = 0
+    count = 0
     while counter < 4:
         matchStart = re.search("_5q6s _8o _8t lfloat _ohe\" href=\"https://www.facebook.com/",text)
         if matchStart is not None:
@@ -1910,6 +1907,8 @@ def friendshipPlot(text,victim):
                 fbid = getUserID(name)
                 if fbid is not -1:
                     friendsID.append(fbid)
+                    count += 1
+                    print "Friends enumerated: %d" %count
             text = text[matchEnd.start()+start:]
         else:
             try:
@@ -2046,13 +2045,13 @@ def seeMore(start,victim,transitive):
 def getUserID(user):
 #Grabs the user Id using the OpenGraph
     try:
-        response = br.open('https://graph.facebook.com/'+str(user))
-        resultado = response.read()
-        json_dump = json.loads(resultado)
-        try:
-            return json_dump['id']
-        except:
-            return -1
+        response = br.open('https://www.facebook.com/'+str(user))
+        data = response.read()
+        #json_dump = json.loads(resultado)
+        #try:
+        #    return json_dump['id']
+        #except:
+        #    return -1
     
     except mechanize.HTTPError as e:
             print e.code
@@ -2060,6 +2059,15 @@ def getUserID(user):
     except mechanize.URLError as e:
             print e.reason.args
             return -1
+    try:
+        match = re.search("fb://profile/",data)
+        if match is not None:
+            start = match.end()
+            matchBis = re.search('"',data[start:])
+            if matchBis is not None:
+                return data[start:start+matchBis.start()]
+    except:
+        return user
     
 def logs(messagelog):
     
@@ -3015,53 +3023,35 @@ def accountexists(mailList):
         mails.append(line.strip('\n'))
     
     mailFile.close()
+    driver = webdriver.Firefox()
     
     for email in mails:
-        cookieHandler = customCookies()
-        # Empty the cookies
-        cj.clear()
         # Access the login page to get the forms
-        try:
-            br.open('https://login.facebook.com/login.php')
-            br.select_form(nr=0)
-        except mechanize.HTTPError as e:
-            logs(str(e.code) + ' on login module')
-            print str(e.code) + ' on login module'
-            continue
-        except mechanize.URLError as e:
-            logs(str(e.reason.args) + ' on login module')
-            print str(e.reason.args) + ' on login module'
-            continue
-        except:
-            logs("Can't Access the login.php form")
-            print "\rCan't Access the login.php form\r"
-            continue
-            # Select the first form
+        driver.delete_all_cookies()
+        driver.get("https://www.facebook.com/")
+        assert "Facebook" in driver.title
+        elem = driver.find_element_by_name("email")
+        elem.send_keys(email)
+        elem = driver.find_element_by_name("pass")
+        elem.send_keys(password)  
+        elem.send_keys(Keys.RETURN)
         
-            
-        # Set email and pass to the form
         try:
-            br.form['email'] = email
-            br.form['pass'] = password
-        except:
-            logs("Something bad happen.. Couldn't set email and password")
-            print "\rSomething bad happen.. Couldn't set email and password\r"
-        # Send the form
-        try:
-            response = br.submit()
-            line = response.read()
+            line = driver.page_source
             match = re.search('Por favor, vuelve a introducir tu contrase',line)
             if match is not None:
-                print email + ' Cuenta existente'
+                print email + ' Cuenta existente :D !!'
                 verified = open(os.path.join("PRIVATE","existence","verified.txt"),"a")
                 verified.write(email + '\n')
                 verified.close()
             else:
-                print email + ' Cuenta inexistente'
+                print email + ' Cuenta inexistente :('
         except:
             logs('Fatal error while submitting the login form')
             print '\rFatal error while submitting the login form\r'
-
+        
+    
+    driver.close()    
     verified.close()
 
 def checkLogin(mailList):
