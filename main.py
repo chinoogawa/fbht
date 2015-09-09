@@ -97,7 +97,7 @@ def main():
             print '29) Check existence of mails\n'
             print '30) Check working account and passwords\n'
             print '31) Steal private photos from password verified dump\n'
-            print '32) Bruteforce celphones\n'
+            print '32) Bruteforce cellphones\n'
             print '33) Close the application\n'
 
             

