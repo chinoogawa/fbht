@@ -1,4 +1,15 @@
-from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng ,reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot,massLogin,acceptRequest,friendshipRequest,like,appMessageSpoof,setMail,login,linkPreviewYoutube,linkPreview,hijackVideo, privateMessagePhishing, bypassFriendshipPrivacy, linkFriends, createUser, deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, devTest, getTest, changePassword,massMessage, massLoginTest, plotDOT, dotFileDatabase, simpleDotGraphDatabase, friendlyLogout, takePhotos,accountexists, checkLogin,steal, bruteforceCel
+from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng , \
+                     reAnalyzeGraph,analyzeGraph,bypassFriendshipPrivacyPlot, \
+                     massLogin,acceptRequest,friendshipRequest,like, \
+                     appMessageSpoof,setMail,login,linkPreviewYoutube,\
+                     linkPreview,hijackVideo, privateMessagePhishing, \
+                     bypassFriendshipPrivacy, linkFriends, createUser, \
+                     deleteUser,deleteAccounts, checkPrivacy, friendshipPlot, \
+                     simpleGraph, dotFile, simpleDotGraph, noteDDoS, likeDev, \
+                     devTest, getTest, changePassword,massMessage, \
+                     massLoginTest, plotDOT, dotFileDatabase, \
+                     simpleDotGraphDatabase, friendlyLogout, takePhotos, \
+                     accountexists, checkLogin,steal, bruteforceCel, sendBroadcast
 from database import connect,status, checkTableExistence, createVictimTable
 from time import time
 import signal
@@ -84,7 +95,7 @@ def main():
             print '16) Link to disclosed friendships\n'
             print '17) Print database status\n'
             print '18) Increase logging level globally\n'
-            print '19) Set global login (Credentials stored in memory - Danger)\n'
+            print '19) Send broadcast to friends (Individual messages)\n'
             print '20) Print dead attacks :\'( \n'
             print '21) Send friend request to disclosed friend list from your account\n'
             print '22) Bypass friendship (only .dot without graph integration)\n'
@@ -385,12 +396,14 @@ def main():
         
         if (int(option) == 19):
             
-            globalLogin = not globalLogin
-            if (globalLogin):
-                    globalEmail,globalPassword = setMail()
-            else:
-                globalEmail = ''
-                globalPassword = ''
+            while True:
+                online = raw_input("Send only to online friends? 0|1: ")
+                if ((int(online) == 1) or (int(online) == 0)):
+                    break
+                
+            email,password = setMail()
+            if (login(email,password,'real'))!= -1:
+                sendBroadcast(int(1))
         
         if (int(option) == 20):
             print 'Mail bomber through test accounts'

@@ -95,6 +95,24 @@ def parseData(dataRaw):
     except:
         print 'for error in MyParser'
     '''
+    
+def parseOnline(data):
+    buddies = []
+    start = 0
+    while True:
+        match = re.search("fbid=", data[start:])
+        if match is not None:
+            start += match.end()
+            matchBis = re.search("&",data[start:])
+            if matchBis is not None:
+                end = matchBis.end() + start
+                buddies.append(str(data[start:end-1]))
+                start = end
+                end = 0
+        else:
+            break
+    return buddies
+
 def parsePending():
     response = open("respuesta.html","r")
     struct = []

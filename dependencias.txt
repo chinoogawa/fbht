@@ -16,3 +16,4 @@ HTMLParser
 simplejson
 re
 sqlite3
+selenium
