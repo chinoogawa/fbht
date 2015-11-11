@@ -9,7 +9,8 @@ from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng , \
                      devTest, getTest, changePassword,massMessage, \
                      massLoginTest, plotDOT, dotFileDatabase, \
                      simpleDotGraphDatabase, friendlyLogout, takePhotos, \
-                     accountexists, checkLogin,steal, bruteforceCel, sendBroadcast
+                     accountexists, checkLogin,steal, bruteforceCel, sendBroadcast, getFriends, \
+                     getUserIDS
 from database import connect,status, checkTableExistence, createVictimTable
 from time import time
 import signal
@@ -74,7 +75,8 @@ def main():
                (int(option) != 27) and (int(option) != 28) and
                (int(option) != 29) and (int(option) != 30) and
                (int(option) != 31) and (int(option) != 32) and
-               (int(option) != 33)):
+               (int(option) != 33) and (int(option) != 34) and
+               (int(option) != 35)):
                         
             print '\n'
             print '1)  Create accounts\n'
@@ -109,7 +111,9 @@ def main():
             print '30) Check working account and passwords\n'
             print '31) Steal private photos from password verified dump\n'
             print '32) Bruteforce cellphones\n'
-            print '33) Close the application\n'
+            print '33) Get public friends\n'
+            print '34) Get userIDS from usernames\n'
+            print '35) Close the application\n'
 
             
             choice = raw_input('Insert your choice: ')
@@ -583,7 +587,19 @@ def main():
                 bruteforceCel(first,start,end)  
             
         if (int(option) == 33):
-            connect.close()          
+            email,password = setMail()
+            if (login(email,password,'real'))!= -1:
+                username = raw_input("Insert the username: ")
+                getFriends(username) 
+        
+        if (int(option) == 34):
+            email,password = setMail()
+            if (login(email,password,'real'))!= -1:
+                username = raw_input("Insert the username: ")
+                getUserIDS(username)     
+        
+        if (int(option) == 35):
+            connect.close()
             
             print '\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n \n \n\n \n \n \n '                        
             print ' _    _            _      _______ _            _____  _                  _   _  '

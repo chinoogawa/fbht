@@ -113,6 +113,30 @@ def parseOnline(data):
             break
     return buddies
 
+def parseFriends(data):
+    start = 0
+    end = 0
+    lines = []
+    friends = []
+    while True:
+        match = re.search(r'href="/([a-zA-Z]*[0-9]*[\.]*)+(\?fref=fr_tab)',data[start:])
+        if match is not None:
+            lines.append(match.group())
+            start += match.end()
+        else:
+            break
+        
+    for linea in lines:
+        name = linea.split('/')[1].split('?')[0]
+        friends.append(name)
+    match = re.search("[a-zA-Z]+\?v=friends&amp;mutual&amp;startindex=[0-9]+",data)
+    if match is not None:
+        raw = match.group()
+        next = raw.replace("&amp;","&")
+    else:
+        next = -1
+    return friends,next
+
 def parsePending():
     response = open("respuesta.html","r")
     struct = []

