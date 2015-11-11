@@ -3289,7 +3289,7 @@ def getFriends(username):
         data = driver.page_source
         list, next = MyParser.parseFriends(data)
         friends += list
-    usernames = (os.path.join('dumps',username,username+"UserNames.txt"),"w")
+    usernames = open(os.path.join('dumps',username,username+"UserNames.txt"),"w")
     for friend in friends:
         usernames.write(friend+'\n')
     usernames.close()

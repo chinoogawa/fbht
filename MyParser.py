@@ -134,7 +134,12 @@ def parseFriends(data):
         raw = match.group()
         next = raw.replace("&amp;","&")
     else:
-        next = -1
+        match = re.search("[a-zA-Z]+/friends\?([a-zA-Z]+=[0-9]+)+(&amp;)*([a-zA-Z]+=[0-9]+)*",data)
+        if match is not None:
+            raw = match.group()
+            next = raw.replace("&amp;","&")
+        else:
+            next = -1
     return friends,next
 
 def parsePending():
