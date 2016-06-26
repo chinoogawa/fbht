@@ -2000,12 +2000,16 @@ def friendshipPlot(text,victim):
 def coreFriendshipPrivacy(victim,transitive):
     friends = []
     try:
-        response = br.open('https://www.facebook.com/'+str(victim)+'?and='+str(transitive)+'&sk=friends')
+        response = br.open('https://www.facebook.com/friendship/'+str(victim)+'/'+str(transitive))
         resultado = response.read()
-        match = re.search('timelineFriendsColumnHeader',resultado)
+        match = re.search('\/browse\/mutual_friends\/\?uid\=',resultado)
         if match is not None:
-            linea = re.search('timelineFriendsColumnHeader(.+)',resultado).group()
-
+            matchEnd = re.search("\"",resultado[match.end():])
+            if matchEnd is not None:
+                link = resultado[match.start():match.end()+matchEnd.start()].replace("&amp;","&")
+                
+                response = br.open('https://www.facebook.com/'+link)
+                linea = response.read()
 
     except mechanize.HTTPError as e:
             print e.code
